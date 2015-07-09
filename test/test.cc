@@ -1,4 +1,4 @@
-#include "character.h"
+#include "../character/character.h"
 #include <stdio.h>
 #include <string.h>
 
