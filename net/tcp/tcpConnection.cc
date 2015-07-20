@@ -32,12 +32,8 @@ void tcpConnection::reConnect()
 				return;
 		}
 
-		pthread_create(&this->_readThread, NULL, tcpConnection::readData, NULL);
-		char buff[1024];
-		while(fgets(buff, 1024, stdin)) {
+		pthread_create(&this->_readThread, NULL, tcpConnection::readData, &this->_socketfd);
 
-				write(this->_socketfd, buff, strlen(buff));
-		}
 }
 
 void tcpConnection::disConnect()
@@ -55,11 +51,20 @@ void tcpConnection::configConnect(const char *host, const int port)
 		inet_pton(AF_INET, host, &this->_servaddr.sin_addr);
 }
 
+void tcpConnection::writeData(const char *buff, const int len)
+{
+		write(this->_socketfd, buff, len);
+}
 
 void *tcpConnection::readData(void *arg)
 {
+		char buff[1024];	
+		int sockfd = *((int *)arg);
 		int n;
-
+		while ((n = read(sockfd, buff, 1024)) > 0) {
+			printf("get msg:%d\n", n);
+			fputs(buff, stdout);
+		}
 		return (void *)0;
 
 }

@@ -17,7 +17,7 @@ namespace lrb {
 			
 				public:
 				tcpConnection() : _socketfd(-1), _connected(false) {};
-				~tcpConnection() {};
+				~tcpConnection() {close(this->_socketfd);};
 
 				private:
 				int _socketfd;
@@ -34,6 +34,7 @@ namespace lrb {
 				void reConnect();
 				void disConnect();
 				void configConnect(const char *host, const int port);
+				void writeData(const char *buff, const int len);
 				bool isConnected();
 
 				private:
