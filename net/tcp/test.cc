@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 
 		tcpConnection *connection = new tcpConnection();
 		connection->Connect("127.0.0.1", 8888);
-		const char *buff = "GET /index.html HTTP/1.1<CR><LF>Host: localhost";
+		const char *buff = "GET /index.html HTTP/1.1\r\nHost:localhost\r\n\n";
 		connection->writeData(buff,strlen(buff));
 		
 		char buff1[1024];
