@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-	int fd = open("file", O_RDWR | O_APPEND | O_CREAT, 0644);
+	int fd = open("file", O_RDWR | O_APPEND | O_CREAT, 00644);
 	if (fd == -1) {
 			printf("open fd error \n");
 			return -1;
