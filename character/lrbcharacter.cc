@@ -1,4 +1,4 @@
-#include "character.h"
+#include "lrbcharacter.h"
 
 ssize_t readn(int fd, void *buff, size_t n) 
 {
