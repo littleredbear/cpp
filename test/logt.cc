@@ -1,4 +1,5 @@
-#include "../lrb.h"
+#include "lrb.h"
+#include "lrbLog.h"
 
 int main (int argc, char **argv)
 {

@@ -1,5 +1,5 @@
 
-#include "log.h"
+#include "lrbLog.h"
 
 using namespace lrb;
 
@@ -41,19 +41,19 @@ void lrbLog::commitLog(const char *buff, size_t len, char type)
 	this->writeLog(r, strlen(r));
 }
 
-lrb::lrbLog *lrbLog::getInstance()
+lrbLog *lrbLog::getInstance()
 {
 	static lrb::lrbLog lrblog;
 	return &lrblog;
 }
 
-void lrb::LrbLOG(const char *buff, size_t len) throw(lrbLogException) 
+void LrbLOG(const char *buff, size_t len) throw(lrbLogException) 
 {
 	lrb::lrbLog *instance = lrbLog::getInstance();
 	instance->commitLog(buff, len, 0);	
 }
 
-void lrb::LrbERROR(const char *buff, size_t len) throw(lrbLogException)
+void LrbERROR(const char *buff, size_t len) throw(lrbLogException)
 {
 	lrb::lrbLog *instance = lrbLog::getInstance();
 	instance->commitLog(buff, len, 1);

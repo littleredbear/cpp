@@ -1,7 +1,7 @@
 #ifndef LRB_LOG_H
 #define LRB_LOG_H
 
-#include "../lrb.h"
+#include "lrb.h"
 
 #define	LRB_LOG_PATH	("/Users/reid/Develop/cpp/log/log.txt")	
 
