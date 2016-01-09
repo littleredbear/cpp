@@ -3,13 +3,13 @@
 
 #include "../lrb.h"
 
-#define	LRB_LOG_PATH	/Users/reid/Develop/cpp/log/log.txt	
+#define	LRB_LOG_PATH	("/Users/reid/Develop/cpp/log/log.txt")	
 
 namespace lrb {
 
 	class lrbLog {
 		private:
-		lrbLog() throw(lrgLogException);
+		lrbLog() throw(lrb::lrbLogException);
 		int _fd;
 		public:	
 		void writeLog(const char *buff, size_t len);

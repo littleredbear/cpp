@@ -12,10 +12,10 @@ enum lrbErrorNO {
 	lrbWriteFileError = 2
 };
 
-//#define LRBDEBUG
-namespace {
-	void lrbLog(const char *buff, size_t len) throw(lrbLogException);
-	void lrbError(const char *buff, size_t len) throw(lrbLogException);
+#define LRBDEBUGLOG
+namespace lrb {
+	extern void LrbLOG(const char *buff, size_t len) throw(lrb::lrbLogException);
+	extern void LrbERROR(const char *buff, size_t len) throw(lrb::lrbLogException);
 }
 
 #endif

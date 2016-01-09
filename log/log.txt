@@ -1,0 +1,2 @@
+Wed Jan  6 17:14:39 2016 LOG: test log
+Wed Jan  6 17:14:39 2016 ERROR: test error
