@@ -11,11 +11,9 @@ vpath %.h $(dir_H)
 CC:=g++
 
 afile:=liblrb.a
-ofiles:=lrbCharacter.o lrbHello.o lrbLog.o lrbException.o
+ofiles:=lrbCharacter.o lrbLog.o lrbException.o
 hfiles:=$(ofiles:%.o=%.h)
 cfiles:=$(addprefix $(dir_C),$(ofiles:%.o=%.cc))
-
-objects:=$(addprefix $(dir_O),$(ofiles))
 
 $(afile) : $(ofiles)
 	$(AR) $(ARFLAGS) $(afile) $(ofiles)

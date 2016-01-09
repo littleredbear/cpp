@@ -1,10 +1,11 @@
 #include "lrb.h"
 #include "lrbLog.h"
 
+using namespace lrb;
 int main (int argc, char **argv)
 {
 	char log[] = "test log";
-	lrb::LrbLOG(log, strlen(log));
+	LrbLOG(log, strlen(log));
 	char err[] = "test error";
-	lrb::LrbERROR(err, strlen(err));
+	LrbERROR(err, strlen(err));
 }

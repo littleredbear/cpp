@@ -47,13 +47,13 @@ lrbLog *lrbLog::getInstance()
 	return &lrblog;
 }
 
-void LrbLOG(const char *buff, size_t len) throw(lrbLogException) 
+void lrb::LrbLOG(const char *buff, size_t len) throw(lrbLogException) 
 {
 	lrb::lrbLog *instance = lrbLog::getInstance();
 	instance->commitLog(buff, len, 0);	
 }
 
-void LrbERROR(const char *buff, size_t len) throw(lrbLogException)
+void lrb::LrbERROR(const char *buff, size_t len) throw(lrbLogException)
 {
 	lrb::lrbLog *instance = lrbLog::getInstance();
 	instance->commitLog(buff, len, 1);
