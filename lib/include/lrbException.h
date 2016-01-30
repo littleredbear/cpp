@@ -1,20 +1,31 @@
 #ifndef LRB_EXCEPTION_H
 #define LRB_EXCEPTION_H
 
-#include <exception>
+#include "lrb.h"
 
 namespace lrb {
-
-	class lrbLogException : public std::exception {
+	class lrbException {
 		private:
-		int _errno;	//1,open error 2.write error
-		const char *_msg;
+			int _errNo;			
+			char *_msg;
 		public:
-		lrbLogException(const char *msg, int errno);
-		virtual const char *what() const throw() {return this->_msg;};
-		int errno() {return this->_errno;};
+			lrbException(const char *msg, int errno);
+			~lrbException() throw();
+			const char *what() const throw() {return this->_msg;};
+			int errNo();
 	};
-
+/*
+	class lrbLogException : public lrb::lrbException {
+		public:
+			lrbLogException(const char *msg, int errno):lrbException(msg,errno){};
+		//errno 1,open error 2.write error };
+	};
+*/
+	class lrbSocketException : public lrb::lrbException {
+		//errno 1,open error 2.write error
+		public:
+			lrbSocketException(const char *msg, int errno):lrbException(msg,errno){};
+	};
 
 }
 

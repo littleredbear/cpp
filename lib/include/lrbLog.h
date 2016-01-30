@@ -10,7 +10,7 @@ namespace lrb {
 
 	class lrbLog {
 		private:
-		lrbLog() throw(lrb::lrbLogException);
+		lrbLog();
 		int _fd;
 		public:	
 		void writeLog(const char *buff, size_t len);

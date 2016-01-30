@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <cstring>
+#include <stdlib.h>
 
 enum lrbErrorNO {
 	lrbOpenFileError = 1,
@@ -14,8 +15,8 @@ enum lrbErrorNO {
 
 //#define LRBDEBUGLOG
 namespace lrb {
-	extern void LrbLOG(const char *buff, size_t len) throw(lrb::lrbLogException);
-	extern void LrbERROR(const char *buff, size_t len) throw(lrb::lrbLogException);
+	extern void LrbLOG(const char *buff, size_t len);
+	extern void LrbERROR(const char *buff, size_t len);
 }
 
 #endif
