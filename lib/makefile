@@ -15,7 +15,7 @@ ofiles:=$(addprefix $(dir_O),$(notdir $(pfiles:.cc=.o)))
 list:=$(filter %.mk,$(shell ls $(dir_O)))
 mkfile:=object.mk
 
-
+.PHONY : $(afile)
 $(afile) : 
 	$(foreach n,$(pfiles),$(call submake,$(n)))
 	$(AR) $(ARFLAGS) $@ $(ofiles)
@@ -31,22 +31,22 @@ clean:
 	-rm *.a
 	$(MAKE) -C $(dir_O) -f $(mkfile) clean
 
-.PHONY : test
-test :
-	@for target in $(pfiles);\
+#.PHONY : test
+#test :
+#	@for target in $(pfiles);\
 	do\
 		$(MAKE) -C $(dir_O) -f $(mkfile) hfile=$$target;\
 	done
 
-.PHONY : test1
-test1 :
-	$(foreach n,$(pfiles),$(call submake,$(n)))
+#.PHONY : test1
+#test1 :
+#	$(foreach n,$(pfiles),$(call submake,$(n)))
 
-tsh := $(shell ./test.sh)
-.PHONY : testSH
-testSH :
-	@echo $(tsh)
-	@echo $(shell ./cfile.sh $(tsh) ".h")
+#tsh := $(shell ./test.sh)
+#.PHONY : testSH
+#testSH :
+#	@echo $(tsh)
+#	@echo $(shell ./cfile.sh $(tsh) ".h")
 
 .PHONY : print
 print :

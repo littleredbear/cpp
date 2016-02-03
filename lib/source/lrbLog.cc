@@ -9,9 +9,6 @@ lrbLog::lrbLog()
 	_fd = STDOUT_FILENO;
 #else
 	_fd = open(LRB_LOG_PATH, O_WRONLY|O_CREAT|O_APPEND,00644);
-	if (_fd == -1) {
-		_fd = open("/dev/null",O_RDWR);		
-	}
 #endif
 }
 
@@ -22,21 +19,23 @@ void lrbLog::writeLog(const char *buff, size_t len)
 
 void lrbLog::commitLog(const char *buff, size_t len, char type)
 {
+	if (this->_fd == -1)
+		return;
+
 	struct tm *tb;
 	time_t t = time(0);
 	tb = localtime(&t);
 	char *ts = asctime(tb);
-	this->writeLog(ts, strlen(ts)-1);
+	std::string msg;
+	msg.append(ts);
 	if (type == 0) {
-		char l[] = " LOG: ";
-		this->writeLog(l, strlen(l));
+		msg.append(" LOG: ");
 	} else {
-		char l[] = " ERROR: ";
-		this->writeLog(l, strlen(l));
+		msg.append(" ERROR: ");
 	}
-	this->writeLog(buff, len);	
-	char r[]="\n";
-	this->writeLog(r, strlen(r));
+	msg.append(buff);
+	msg.append("\n");
+	writen(this->_fd, msg.c_str(), msg.length());
 }
 
 lrbLog *lrbLog::getInstance()
@@ -56,4 +55,5 @@ void lrb::LrbERROR(const char *buff, size_t len)
 	lrb::lrbLog *instance = lrbLog::getInstance();
 	instance->commitLog(buff, len, 1);
 }
+
 

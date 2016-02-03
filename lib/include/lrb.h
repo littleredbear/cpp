@@ -13,10 +13,5 @@ enum lrbErrorNO {
 	lrbWriteFileError = 2
 };
 
-//#define LRBDEBUGLOG
-namespace lrb {
-	extern void LrbLOG(const char *buff, size_t len);
-	extern void LrbERROR(const char *buff, size_t len);
-}
 
 #endif
