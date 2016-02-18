@@ -6,23 +6,28 @@
 #include <string>
 
 enum expType {
-	sockExp = 1
+	sockExp = 1,
+	threadExp	
 
 };
 
 enum sockExp {
-	connectExp = 1,
-	listenExp
+	getAddrinfoExp = 1,
+	connectExp,
+	listenExp1,	// no avaiable address
+	listenExp2,	// setsockopt exp
+	listenExp3,	// listen error
+	dataExp
 };
 
 namespace lrb {
 	class lrbException {
 		private:
-			char _errNo;			
-			char _type;	
+			int _errNo;			
+			int _type;	
 			std::string _msg;
 		public:
-			lrbException(std::string &msg, char type, char errNo):_msg(msg),_type(type),_errNo(errNo){};
+			lrbException(std::string &msg, int type, int errNo):_msg(msg),_type(type),_errNo(errNo){};
 			~lrbException() throw(){};
 			const char *what() const throw() {return this->_msg.c_str();};
 			int errNo() {return this->_errNo;};

@@ -37,13 +37,17 @@ int main (int argc, char **argv)
 	cli1.ai_family = AF_UNSPEC;
 	cli1.ai_socktype = SOCK_STREAM;
 	
-	char host[] = "10.0.9.67";
+	char host[] = "reiddeMac-mini.local";
 	char port[] = "8080";
 	int r = getaddrinfo(host, port, &cli1, &res);
 	if (r != 0) {
 		printf("g e\n");	
 	}
-
+	cur = res;
+	do {
+		printf("host:%s, host name:%s\n",host, res->ai_canonname);
+	} while ((cur = cur->ai_next) != NULL);
+	
 //	fd = socket(AF_INET6, SOCK_STREAM, 0);
 	fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (fd == -1)
