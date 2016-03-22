@@ -1,7 +1,5 @@
 
-
 vpath %.o $(dir_O)
-vpath %.cc $(dir_C)
 vpath %.h $(dir_H)
 
 hfile:=$(shell ./pfile.sh $(cfile))

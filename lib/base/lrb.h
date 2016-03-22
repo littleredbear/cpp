@@ -1,8 +1,8 @@
 #ifndef LRB_H
 #define LRB_H
 
-#include "lrbException.h"
-#include "lrbCharacter.h"
+#include "base/lrbException.h"
+#include "base/lrbCharacter.h"
 #include <sys/types.h>
 #include <time.h>
 #include <cstring>

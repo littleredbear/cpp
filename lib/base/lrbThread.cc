@@ -1,4 +1,6 @@
-#include "lrbThread.h"
+
+#include "base/lrbThread.h"
+#include "base/lrbException.h"
 
 
 using namespace lrb;

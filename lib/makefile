@@ -1,16 +1,15 @@
 
 dir:= $(shell pwd)
-dir_H:=$(dir)/include/
+dir_H:=$(dir)/
 dir_O:=$(dir)/object/
-dir_C:=$(dir)/source/
 
 CC:=g++
 
-export dir_H dir_O dir_C CC
+export dir dir_H dir_O CC
 
 
 afile:=liblrb.a
-pfiles:=$(shell ls $(dir_C)*.cc)
+pfiles:=$(shell find $(dir) -name *.cc)
 ofiles:=$(addprefix $(dir_O),$(notdir $(pfiles:.cc=.o)))
 list:=$(filter %.mk,$(shell ls $(dir_O)))
 mkfile:=object.mk

@@ -6,9 +6,8 @@ then
 	exit
 fi
 
-cfile=$1
-dir_C=${cfile%/*}
-dir_H=${dir_C%/*}"/include/"
+dir=`pwd`
+dir_H=${dir%/*}"/"
 
 hlist=()
 

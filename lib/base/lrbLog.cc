@@ -1,5 +1,6 @@
 
-#include "lrbLog.h"
+#include "base/lrbLog.h"
+#include "base/lrbCharacter.h"
 
 using namespace lrb;
 

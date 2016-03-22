@@ -1,7 +1,6 @@
 #ifndef LRB_LOG_H
 #define LRB_LOG_H
 
-#include "lrbCharacter.h"
 #include <time.h>
 #include <cstring>
 #include <string>

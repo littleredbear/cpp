@@ -1,7 +1,6 @@
 #ifndef LRB_THREAD_H
 #define LRB_THREAD_H
 
-#include "lrbException.h"
 #include <pthread.h>
 #include <functional>
 

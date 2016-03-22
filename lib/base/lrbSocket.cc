@@ -1,5 +1,7 @@
 
-#include "lrbSocket.h"
+#include "base/lrbSocket.h"
+#include "base/lrbLog.h"
+#include "base/lrbThread.h"
 
 using namespace lrb;
 

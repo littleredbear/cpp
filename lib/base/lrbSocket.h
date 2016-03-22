@@ -1,9 +1,7 @@
 #ifndef _LRB_SOCKET_H
 #define _LRB_SOCKET_H
 
-#include "lrbLog.h"
-#include "lrbException.h"
-#include "lrbThread.h"
+#include "base/lrbException.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

@@ -7,9 +7,20 @@
 
 using namespace lrb;
 
+class test1 {
+	public:
+	int _b;
+
+};
+
 class test {
+	public:
+		int _a;
+		test1 _t1;
 
 	public:
+	test(int a):_a(a) {};
+	test(test1 &t1):_t1(t1) {};
 	void testT();
 	static void *threadT(void *arg);
 	void testA(int a, int b=1, int c= 2);
@@ -59,8 +70,16 @@ int main(int argc, char **argv)
 	ad = ad + "kfjd";
 	printf("%s\n", ad.c_str());
 
-	test t;
+	test t(2);
 	t.testA(1);	
 	t.testA(1,10,1);
+	test t1 = 1;
+	t1 = t;
+	
+	test1 t11;
+	t11._b = 3;
+	test t12 = t11;
+//	t12 = t;
+	printf("t:%d,%d,%d,%d", t11._b, t1._t1._b, t12._t1._b, t12._a); 
 	
 }
