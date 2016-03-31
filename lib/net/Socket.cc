@@ -1,29 +1,28 @@
 
-#include "base/lrbSocket.h"
-#include "base/lrbLog.h"
-#include "base/lrbThread.h"
+#include "net/Socket.h"
+#include "base/Thread.h"
 
 using namespace lrb;
 
-lrbSocket::~lrbSocket()
+Socket::~Socket()
 {
 	if (this->_fd != -1)
 		close(this->_fd);	
 
 }
 
-void lrbSocket::throwSocketExp(const char *pref, const char *host, const char *port, char errNO) throw (lrbException &)
+void Socket::throwSocketExp(const char *pref, const char *host, const char *port, char errNO) throw (Exception &)
 {	
 	std::string msg = pref;
 	msg.append(" host:");
 	msg.append(host);
 	msg.append(" port:");
 	msg.append(port);	
-	throw lrbException(msg, 1, errNO);
+	throw Exception(msg, 1, errNO);
 
 }
 
-void lrbSocket::tcpConnect(const char *host, const char *port) throw (lrbException &)
+void Socket::tcpConnect(const char *host, const char *port) throw (Exception &)
 {
 	if (!host || !port || (!this->_host.compare(host) && !this->_port.compare(port)))
 		return;
@@ -63,7 +62,7 @@ void lrbSocket::tcpConnect(const char *host, const char *port) throw (lrbExcepti
 
 }
 
-void lrbSocket::tcpListen(const char *host, const char *port, socklen_t *addrlenp) throw (lrbException &)
+void Socket::tcpListen(const char *host, const char *port, socklen_t *addrlenp) throw (Exception &)
 {
 	struct addrinfo hints, *res, *cur;		
 	memset(&hints, 0, sizeof(hints));
@@ -116,7 +115,7 @@ void lrbSocket::tcpListen(const char *host, const char *port, socklen_t *addrlen
 
 }
 
-void lrbSocket::buildDataThread()
+void Socket::buildDataThread()
 {
 
 }

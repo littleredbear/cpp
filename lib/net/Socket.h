@@ -1,7 +1,7 @@
 #ifndef _LRB_SOCKET_H
 #define _LRB_SOCKET_H
 
-#include "base/lrbException.h"
+#include "base/Exception.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -17,7 +17,7 @@
 
 namespace lrb {
 
-	class lrbSocket {
+	class Socket {
 	
 		private:	
 			int _fd;
@@ -25,15 +25,15 @@ namespace lrb {
 			std::list<std::string> _sendList;
 			std::string _host;
 			std::string _port;
-			void throwSocketExp(const char *pref, const char *host, const char *port, char errNO) throw (lrbException &);
+			void throwSocketExp(const char *pref, const char *host, const char *port, char errNO) throw (Exception &);
 			void recvData();
 			void sendData();
 
 		public:
-			lrbSocket():_fd(-1) {};
-			~lrbSocket();
-			void tcpConnect(const char *host, const char *port) throw (lrbException &);
-			void tcpListen(const char *host, const char *port, socklen_t *addrlenp) throw (lrbException &);
+			Socket():_fd(-1) {};
+			~Socket();
+			void tcpConnect(const char *host, const char *port) throw (Exception &);
+			void tcpListen(const char *host, const char *port, socklen_t *addrlenp) throw (Exception &);
 			void buildDataThread();
 	};
 

@@ -6,7 +6,7 @@ hfile:=$(shell ./pfile.sh $(cfile))
 ofile:=$(notdir $(cfile:.cc=.o))
 $(ofile) : $(cfile) $(hfile)
 	@echo build $@
-	$(CC) -c -I$(dir_H) $<
+	$(CC) -c $(CPPFLAGS) -I$(dir_H) $<
 
 .PHONY : print
 print :
