@@ -10,7 +10,7 @@ namespace currentThread {
 
 namespace detail {
 	struct ThreadData {
-		typedef lrb::Thread::ThreadFunc ThreadFunc;
+		typedef base::Thread::ThreadFunc ThreadFunc;
 		ThreadFunc _func;
 
 		ThreadData(ThreadFunc func):_func(func) {};
@@ -37,6 +37,7 @@ namespace detail {
 }
 
 using namespace lrb;
+using namespace lrb::base;
 Thread::Thread(ThreadFunc func):
 	_func(func),
 	_started(false),

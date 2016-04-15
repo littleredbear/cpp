@@ -3,6 +3,7 @@
 #include <assert.h>
 
 using namespace lrb;
+using namespace lrb::log;
 
 LogFile::LogFile(const char *basename):
 	m_basename(basename),
@@ -50,7 +51,7 @@ std::string LogFile::LogFileName()
 	char timebuf[32];
 	struct tm tm;
 	localtime_r(&m_logTime, &tm);
-	strftime(timebuf, sizeof(timebuf), ".%Y%m%d-%H%M%S", &tm);
+	strftime(timebuf, sizeof(timebuf), "_%Y%m%d-%H%M%S", &tm);
 	filename += timebuf;
 	filename += ".log";
 	return std::move(filename);
@@ -63,7 +64,7 @@ void LogFile::rollFile()
 		m_fp = NULL;
 	}
 	m_logTime = time(NULL);
-	m_fp = fopen(LogFileName().c_str(), "a+");
+	m_fp = fopen(LogFileName().c_str(), "ae");
 	assert(m_fp != NULL);
 	m_logSize = 0;
 }

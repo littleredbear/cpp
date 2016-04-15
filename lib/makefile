@@ -4,7 +4,7 @@ dir_H:=$(dir)/
 dir_O:=$(dir)/object/
 
 CC:=g++
-CPPFLAGS:=-std=c++11
+CPPFLAGS:=-std=c++11 -DLRBLOG
 
 export dir dir_H dir_O CC CPPFLAGS
 
