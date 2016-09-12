@@ -56,6 +56,16 @@ int main(int argc, char **argv)
 	std::cout << "---------" << std::endl;
 	getBlock().print();
 
-	Vec2 pp(1, 1);
+	std::shared_ptr<Block> &ttttt = vec.back();
+	vec.pop_back();
+	float lll = FLT_MAX;
+//	ttttt->print();
+	std::vector<int> tets;
+	tets.push_back(11);
+	tets.push_back(22);
+	tets.push_back(33);
+	std::sort(tets.begin(), tets.end(), [](int a, int b) {return a > b;});
+	for (auto i : tets)
+		std::cout << i << std::endl;
 
 }

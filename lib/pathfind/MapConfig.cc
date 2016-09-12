@@ -25,7 +25,8 @@ void SearchTree::addSearchNode(SearchNode *node)
 Block::Block(Point &bot, Point &top):
 m_bot(bot),
 m_top(top),
-m_id(-1)
+m_id(-1),
+m_chain(new ChainInfo())
 {
 }
 
@@ -170,6 +171,15 @@ std::vector<Point> Block::inflexionPoints(std::shared_ptr<Block> &left, std::sha
 	return vec;
 }
 
+void Block::checkMark(blockPtr &block, blockVec &vec) 
+{
+	auto &chainInfo = block->getChainInfo();
+	if (!chainInfo->getMark()) {
+		chainInfo->mark();
+		vec.push_back(block);
+	}
+}
+
 MapConfig::MapConfig(Point &p):
 m_top(p)
 {
@@ -310,9 +320,60 @@ std::shared_ptr<Block> MapConfig::findBlock(Point &point)
 	return block;
 }
 
-std::vector<Point> MapConfig::findPath(Point &start, Point &end, float width)
+std::vector<Point> MapConfig::pathFromBlock(blockPtr &endBlock)
 {
 	std::vector<Point> path;
+	return path;
+}
+
+std::vector<Point> MapConfig::findRealPath(blockPtr &startBlock, blockPtr &endBlock, Point &end, float width)
+{
+	blockVec blocks;
+	blocks.push_back(startBlock);
+	auto &endChain = endBlock->getChainIno();
+	while(!blocks.empty() && !endChain->getMark()) {
+		blockPtr &next = blocks.back();
+		blocks.pop_back();
+		const blockPtr &fromBlock = next->getChainInfo()->getFromBlock();
+
+		float nx = next->getTop().x;
+		auto iter = m_moveMap.find(nx);
+		if (iter != m_moveMap.end() && !(iter->second).empty()) {
+			for (auto &rb : iter->second) {
+				if (fromBlcok == rb)
+					continue;
+
+				if (!checkRightBlock(next, rb, end, width))
+					continue;
+
+				Block::checkMark(rb, blocks);
+				if (rb == endBlock) 
+					break;
+			}
+		}
+
+		if (!endChain->getMark()) {
+			for (auto &lb : next->getFrontVec()) {
+				if (fromBlock == lb)
+					continue;
+
+				if (!checkLeftBlock(next, lb, end, width))
+					continue;
+
+				Block::checkMark(lb, blocks);
+				if (lb == endBlock)
+					break;
+			}
+		}
+		std::sort(blocks.begin(), blocks.end(), [](const blockPtr &a, const blockPtr &b) {
+					return a->getChainInfo()->getValue() > b->getChainInfo()->getValue();});
+	}
+
+	return pathFromBlock(endBlock);
+}
+
+std::vector<Point> MapConfig::findPath(Point &start, Point &end, float width)
+{
 	std::shared_ptr<Block> startBlock = findBlock(start);
 	if (startBlock) {
 		std::cout << "start Block->" << startBlock->blockDescribe() << std::endl;
@@ -327,14 +388,108 @@ std::vector<Point> MapConfig::findPath(Point &start, Point &end, float width)
 		std::cout << "end Block not found!" << std::endl;
 	}
 	
-	findNextBlock(startBlock, endBlock, start, end, width);
-
-	return path;
+	if (startBlock == endBlock) {
+		std::vector<Point> path;
+		path.push_back(end);
+		return path;
+	} else {
+		auto &chain = startBlock->getChainInfo();
+		chain->setStartPoint(start);
+		Point t(start.x, startBlock->getTop().y);
+		Point b(start.x, startBlock->getBottom().y);
+		chain->setTopPoint(t);
+		chain->setBotPoint(b);
+		return findRealPath(startBlock, endBlock, end, width);
+	}
 }
 
-void MapConfig::findNextBlock(blockPtr &startBlock, endBlock &endBlock, Point &start, Point &end, float width)
+float MapConfig::calculateRightPath(blockVec &vec, Point &start, Point &end)
+{
+	blockPtr startBlock;
+	for (auto &block : vec) {
+		if (block->getTop().x > start.x) {
+			startBlock = block;
+			break;
+		}
+	}
+
+	if (startBlock == vec.end()) {
+
+	}
+}
+
+float MapConfig::checkRightOverTop(blockVec &vec, Point &start, Point &end, Point &top, Point &bot)
+{
+	
+}
+
+float MapConfig::checkRightBelowBottom(blockPtr &startBlock, blockPtr &rightBlock, Point &end)
 {
 
 }
+
+float MapConfig::checkRightInside(blockVec &vec, Point &start, Point &end, Point &top, Point &bot)
+{
+	Point s2end = end-start;
+	Point s2top = top-start;
+	Point s2bot = bot-start;
+	if (s2end.cross(s2top) < 0) {
+		return s2top.getLength() + calculateRightPath(vec, top, end);
+	} else if (s2end.cross(s2bot) > 0) {
+		return s2bot.getLength() + calculateRightPath(vec, bot, end);
+	} else {
+		return s2end.getLength();
+	}
+}
+
+bool MapConfig::checkRightBlock(blockPtr &startBlock, blockPtr &rightBlock, Point &end, float width)
+{
+	std::vector<Point> infs = Block::inflexionPoints(startBlock, rightBlock, width);
+	if (infs.size() != 2) {
+		return false;
+	}
+
+	auto &startChain = startBlock->getChainInfo();
+	Point start = startChain->getStartPoint();
+	Point top = startChain->getTopPoint();
+	Point bot = startChain->getBotPoint();
+	Point s2top = startChain->getTopPoint()-start;
+	Point s2bot = startChain->getBotPoint()-start;
+	Point s2intop = infs[1]-start;
+	Point s2inbot = infs[0]-start;
+
+	blockVec vec = startChain->getPathBlocks();
+	vec.push_back(rightBlock);
+
+	auto &rightChain = rightBlock->getChainInfo();
+	if (s2top.cross(s2inbot) > 0) {
+		float value = checkRightOverTop(vec, start, end);
+		rightChain->setStartPoint(top);
+	} else if (s2bot.cross(s2intop) < 0) {
+
+	} else {
+		Point fbot = s2bot.cross(s2inbot) > 0 infs[0] : bot;
+		Point ftop = s2top.cross(s2intop) < 0 infs[1] : top;
+		
+	}
+
+	return true;
+}
+
+bool MapConfig::checkLeftBlock(blockPtr &startBlock, blockPtr &leftBlock, Point &end, float width)
+{
+	std::vector<Point> infs = Block::inflexionPoints(leftBlock, startBlock, width);
+	if (infs.size() != 2) {
+		return false;
+	}
+	
+	auto &startChain = startBlock->getChainInfo();	
+	Point start = startChain->getStartPoint();
+
+	return true;
+}
+
+
+
 
 
