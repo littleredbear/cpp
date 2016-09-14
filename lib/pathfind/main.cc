@@ -64,8 +64,10 @@ int main(int argc, char **argv)
 	tets.push_back(11);
 	tets.push_back(22);
 	tets.push_back(33);
-	std::sort(tets.begin(), tets.end(), [](int a, int b) {return a > b;});
-	for (auto i : tets)
+
+	std::reverse(tets.begin(), tets.end());
+		
+	for (auto &i : tets) 
 		std::cout << i << std::endl;
 
 }

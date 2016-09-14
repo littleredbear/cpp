@@ -39,6 +39,7 @@
 
 /** Clamp a value between from and to.
  */
+namespace cocos2d{
 
 inline float clampf(float value, float min_inclusive, float max_inclusive)
 {
@@ -762,6 +763,7 @@ inline const Vec2 operator*(float x, const Vec2& v);
 
 typedef Vec2 Point;
 
+}
 //NS_CC_MATH_END
 
 /**

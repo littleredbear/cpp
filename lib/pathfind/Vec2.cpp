@@ -24,6 +24,7 @@
 
 //NS_CC_MATH_BEGIN
 
+using namespace cocos2d;
 // returns true if segment A-B intersects with segment C-D. S->E is the ovderlap part
 bool isOneDimensionSegmentOverlap(float A, float B, float C, float D, float *S, float * E)
 {

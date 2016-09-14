@@ -2,6 +2,7 @@
 #include <iostream>
 
 using namespace lrb;
+using namespace cocos2d;
 int main(int argc, char **argv)
 {
 	Point p = Point(100, 100);
@@ -48,22 +49,25 @@ int main(int argc, char **argv)
 //	config.printMap();
 	Point start(4, 13);
 	Point end(16, 14);
-	config.findPath(start, end, 2);
+	std::vector<Point> path = config.findPath(start, end, 2);
+	std::cout << "----------" << std::endl;
+	for (auto &p : path) 
+		std::cout << p.x << ", " << p.y << std::endl;
 	
-	Point bb1(10, 10);
-	Point tt1(15, 15);
-	std::shared_ptr<Block> tblock1(new Block(bb1, tt1));
-	
-	Point bb2(15, 12);
-	Point tt2(20, 20);
-	std::shared_ptr<Block> tblock2(new Block(bb2, tt2));
-	std::vector<Point> path = Block::inflexionPoints(tblock1, tblock2, 2);
-	if (!path.empty()) {
-		for (auto &p : path) 
-			std::cout << "x=" << p.x << ", y=" << p.y << std::endl;
-	} else {
-		std::cout << "inflexion empty" << std::endl;
-	}
+//	Point bb1(10, 10);
+//	Point tt1(15, 15);
+//	std::shared_ptr<Block> tblock1(new Block(bb1, tt1));
+//	
+//	Point bb2(15, 12);
+//	Point tt2(20, 20);
+//	std::shared_ptr<Block> tblock2(new Block(bb2, tt2));
+//	std::vector<Point> path = Block::inflexionPoints(tblock1, tblock2, 2);
+//	if (!path.empty()) {
+//		for (auto &p : path) 
+//			std::cout << "x=" << p.x << ", y=" << p.y << std::endl;
+//	} else {
+//		std::cout << "inflexion empty" << std::endl;
+//	}
 
 
 }
