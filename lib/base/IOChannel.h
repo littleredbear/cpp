@@ -1,7 +1,7 @@
 #ifndef LRB_BASE_IOCHANNEL_H
 #define LRB_BASE_IOCHANNEL_H
 
-#include "base/Channel.h"
+#include "Channel.h"
 
 namespace lrb {
 

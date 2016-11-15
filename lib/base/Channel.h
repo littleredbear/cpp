@@ -2,8 +2,8 @@
 #define LRB_BASE_CHANNEL_H
 
 
-#include "base/base.h"
-#include "base/EventLoop.h"
+#include "base.h"
+#include "EventLoop.h"
 #include <poll.h>
 #include <functional>
 

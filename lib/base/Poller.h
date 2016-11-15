@@ -1,8 +1,8 @@
 #ifndef LRB_BASE_POLLER_H
 #define LRB_BASE_POLLER_H
 
-#include "base/base.h"
-#include "base/Channel.h"
+#include "base.h"
+#include "Channel.h"
 #include <poll.h>
 #include <vector>
 #include <map>

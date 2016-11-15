@@ -1,7 +1,7 @@
 #ifndef LRB_BASE_TEMPLATE_H
 #define LRB_BASE_TEMPLATE_H
 
-#include "base/Mutex.h"
+#include "Mutex.h"
 
 namespace lrb {
 

@@ -1,0 +1,6 @@
+
+target:=liblrb.so
+cc:=cc
+cflags:=-shared -fpic
+src_pattern:="*.c*"
+projdir:=".."

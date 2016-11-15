@@ -1,7 +1,7 @@
 #ifndef LRB_LOG_LOGSTREAM_H
 #define LRB_LOG_LOGSTREAM_H
 
-#include "log/LogBuffer.h"
+#include "LogBuffer.h"
 #include <stdio.h>
 #include <cstring>
 

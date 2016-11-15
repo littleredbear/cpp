@@ -2,8 +2,8 @@
 #define LRB_BASE_EVENTCHANNEL_H
 
 
-#include "base/Channel.h"
-#include "base/Mutex.h"
+#include "Channel.h"
+#include "Mutex.h"
 #include <functional>
 #include <vector>
 

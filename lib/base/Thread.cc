@@ -1,6 +1,6 @@
 
-#include "base/Thread.h"
-#include "base/Exception.h"
+#include "Thread.h"
+#include "Exception.h"
 
 namespace lrb {
 

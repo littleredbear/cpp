@@ -1,4 +1,4 @@
-#include "log/LogStream.h"
+#include "LogStream.h"
 
 
 #ifdef LRBLOG

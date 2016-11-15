@@ -1,7 +1,7 @@
 #ifdef LRB_LINUX
 
-#include "base/EPoller.h"
-#include "log/LogStream.h"
+#include "EPoller.h"
+#include "LogStream.h"
 #include <unistd.h>
 #include <memory.h>
 

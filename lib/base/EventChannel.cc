@@ -1,4 +1,4 @@
-#include "base/EventChannel.h"
+#include "EventChannel.h"
 
 using namespace lrb::base;
 

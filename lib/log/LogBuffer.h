@@ -2,15 +2,15 @@
 #define LRB_LOG_LOGBUFFER_H
 
 #include <iostream>
-#include "base/base.h"
-#include "base/Buffer.h"
-#include "base/Thread.h"
-#include "log/LogFile.h"
-#include "base/Mutex.h"
+#include "base.h"
+#include "Buffer.h"
+#include "Thread.h"
+#include "LogFile.h"
+#include "Mutex.h"
 #include <list>
 #include <stdlib.h>
 #include <iostream>
-#include "base/Condition.h"
+#include "Condition.h"
 
 namespace lrb {
 

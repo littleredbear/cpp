@@ -1,4 +1,4 @@
-#include "log/LogBuffer.h"
+#include "LogBuffer.h"
 
 using namespace lrb;
 using namespace lrb::base;
