@@ -1,73 +1,50 @@
-#include "MapConfig.h"
+#include <math.h>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <stdio.h>
+#include <map>
+#include <vector>
+#include <functional>
 
-using namespace lrb;
-using namespace cocos2d;
+
+class T {
+public:
+	T():m_a(0) {};
+	T(int a):m_a(a){};
+	~T(){std::cout << "test test" << m_a << std::endl;};
+private:
+	int m_a;
+	int m_b;
+};
+
+void testMap(std::map<int, std::vector<std::shared_ptr<T> > > &map)
+{
+	std::vector<std::shared_ptr<T> > &vec = map[1];
+	std::shared_ptr<T> t(new T(3));
+	vec.push_back(t);	
+	map.clear();
+}
+
+void testFunc(int a, int b)
+{
+	std::cout << a << "," << b << std::endl;
+}
+
 int main(int argc, char **argv)
 {
-	Point p = Point(100, 100);
-	MapConfig  config(p);
+//	std::map<int, std::vector<std::shared_ptr<T> > > map;
+//	testMap(map);
+//	std::cout << "end" << std::endl;
+//	std::shared_ptr<T> a;
+//	std::cout << sizeof(a) << std::endl;
 
-	Point top = Point(10, 10);
-	Point bot = Point(1,1);
-	std::shared_ptr<Block> block(new Block(bot, top));
+//	uint32_t tt = -1;
+//	std::cout << tt << std::endl;
+//	std::vector<T> vec = map[1];
+//	std::cout << vec.size() << std::endl;
 
-	Point t(12, 7);
-	Point b(11, 3);
-	std::shared_ptr<Block> block1(new Block(b, t));
+	std::function<void(int, int)> f = std::bind(&testFunc, std::placeholders::_1, std::placeholders::_2);
+	f(1, 3);
 	
-	Point t2(15,15);
-	Point b2(5,12);
-	std::shared_ptr<Block> block2(new Block(b2,t2));
-	
-//	std::vector<std::shared_ptr<Block> > vec;
-//	block->splitWithBlock(block1, vec);
-	
-//	std::shared_ptr<Block> cross = block->crossBlockWithBlock(block1);
-//	if (cross)
-//		std::cout << cross->blockDescribe() << std::endl;
-//	else
-//		std::cout << "no cross block" << std::endl;
-
-//	std::cout << "----" << std::endl;
-
-//	if (!vec.empty())
-//		for (auto &iter : vec) 
-//			std::cout << iter->blockDescribe() << std::endl;
-//	else
-//		std::cout << "no cross block" << std::endl;
-
-	std::cout << "--------" << std::endl;
-
-	block->useBlockId();
-	block1->useBlockId();
-	block2->useBlockId();
-	config.addBlock(block);
-	config.addBlock(block1);
-	config.addBlock(block2);
-	config.generateMap();
-//	config.printMap();
-	Point start(4, 13);
-	Point end(16, 14);
-	std::vector<Point> path = config.findPath(start, end, 2);
-	std::cout << "----------" << std::endl;
-	for (auto &p : path) 
-		std::cout << p.x << ", " << p.y << std::endl;
-	
-//	Point bb1(10, 10);
-//	Point tt1(15, 15);
-//	std::shared_ptr<Block> tblock1(new Block(bb1, tt1));
-//	
-//	Point bb2(15, 12);
-//	Point tt2(20, 20);
-//	std::shared_ptr<Block> tblock2(new Block(bb2, tt2));
-//	std::vector<Point> path = Block::inflexionPoints(tblock1, tblock2, 2);
-//	if (!path.empty()) {
-//		for (auto &p : path) 
-//			std::cout << "x=" << p.x << ", y=" << p.y << std::endl;
-//	} else {
-//		std::cout << "inflexion empty" << std::endl;
-//	}
-
-
 }
