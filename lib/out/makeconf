@@ -4,3 +4,5 @@ cc:=cc
 cflags:=-shared -fpic
 src_pattern:="*.c*"
 projdir:=".."
+include_dirs:=
+src_dirs:=

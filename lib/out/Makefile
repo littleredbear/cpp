@@ -2,11 +2,19 @@
 
 -include makeconf
 
-src_files:=$(shell find $(projdir) -name $(src_pattern))
+ifndef src_dirs
+src_dirs:=$(shell find $(projdir) -type d)
+endif
+
+src_files:=$(shell find $(src_dirs) -name $(src_pattern))
 pure_files:=$(notdir $(src_files))
 file_names:=$(basename $(pure_files))
-src_dirs:=$(shell find $(projdir) -type d)
+
+ifndef include_dirs
 include_dirs:=$(addprefix -I, $(src_dirs))
+else
+include_dirs:=$(addprefix -I, $(include_dirs))
+endif
 
 VPATH:=$(src_dirs)
 
