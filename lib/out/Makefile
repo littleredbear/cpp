@@ -28,6 +28,7 @@ define createdfile
 	sed 's,\($*\)\.o[:]*,\1.o $1:,g' < $1.$$$$ > $1;\
 	echo '\t$(cc) -c $(include_dirs) $2' >> $1;\
 	rm -f $1.$$$$
+
 endef
 
 %.d : %.c
