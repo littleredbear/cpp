@@ -1,7 +1,7 @@
 
-target:=liblrb.so
+target:=liblrblog.so
 cc:=cc
-cflags:=-shared -fpic -std=c++11
+cflags:=-shared -fpic
 src_pattern:="*.c*"
 projdir:=".."
 include_dirs:=

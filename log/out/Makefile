@@ -21,14 +21,12 @@ VPATH:=$(src_dirs)
 $(target) : $(addsuffix .o, $(file_names))
 	$(cc) $(cflags) -o $@ $^
 
-eof:=$
-
 define createdfile
 	@set -e;rm -f $1;\
+	echo $(include_dirs);\
 	$(cc) -MM $(include_dirs) $2 > $1.$$$$;\
-	sed 's/\($*\).o[:]/$1:/g' < $1.$$$$ > $1;\
-	cat $1.$$$$ >> $1;\
-	echo "\t$(cc) -c $(include_dirs) $<" >> $1;\
+	sed 's,\($*\)\.o[:]*,\1.o $1:,g' < $1.$$$$ > $1;\
+	echo '\t$(cc) -c $(include_dirs) $2' >> $1;\
 	rm -f $1.$$$$
 
 endef
@@ -46,7 +44,7 @@ endef
 clean :
 	-rm -rf *.o *.d.* *.d $(target)
 
--include  $(addsuffix .d, $(file_names))
+include  $(addsuffix .d, $(file_names))
 
 
 
