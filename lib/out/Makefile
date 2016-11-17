@@ -8,6 +8,7 @@ endif
 
 src_files:=$(shell find $(src_dirs) -name $(src_pattern))
 pure_files:=$(notdir $(src_files))
+pure_files:=$(sort $(pure_files))
 file_names:=$(basename $(pure_files))
 
 ifndef include_dirs

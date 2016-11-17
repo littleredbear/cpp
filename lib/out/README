@@ -1,0 +1,11 @@
+
+配置文件：makeconf
+
+1.文件名相同会有问题。
+
+2.include_dirs：头文件目录／默认工程下所有目录
+3.src_dirs；资源文件目录／默认工程下所有目录
+4.proj_dir：工程目录／默认Makefile文件的上级目录
+5.src_pattern：资源文件类型／默认.c/.cc/.cpp
+
+
