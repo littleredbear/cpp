@@ -8,7 +8,6 @@ endif
 
 src_files:=$(shell find $(src_dirs) -maxdepth 1 -name $(src_pattern))
 pure_files:=$(notdir $(src_files))
-#pure_files:=$(sort $(pure_files))
 file_names:=$(basename $(pure_files))
 #file_names:=$(basename $(src_files))
 
