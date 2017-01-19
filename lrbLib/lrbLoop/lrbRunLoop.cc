@@ -10,7 +10,7 @@ using namespace lrb;
 
 TaskManager RunLoop::s_taskManager[LOOPLEN][(int)RunLoopType::RLT_TOP];
 LoopPoller RunLoop::s_poller[(int)RunLoopType::RLT_TOP];
-#ifdef TIMERLOOP
+#ifdef LRBTIMERLOOP
 	TimerManager RunLoop::s_timerManager[(int)RunLoopType::RLT_TOP-1];
 #endif
 
@@ -28,7 +28,7 @@ void RunLoop::initRunLoop(const std::function<void()> &func)
 		startNewLoop((RunLoopType)i);
 	}
 
-#ifdef TIMERLOOP
+#ifdef LRBTIMERLOOP
 	startTimerLoop();
 #endif
 	
@@ -61,7 +61,7 @@ void RunLoop::runInLoop(const std::function<void()> &func, RunLoopType type, con
 
 	if (tv != NULL)
 	{
-#ifdef TIMERLOOP
+#ifdef LRBTIMERLOOP
 		s_timerManager[(int)type].addTask(func, tv);
 		s_poller[(int)RunLoopType::RLT_TIMER].notify();
 #endif
@@ -85,7 +85,7 @@ bool RunLoop::execTask()
 
 void RunLoop::timerFunc()
 {
-#ifdef TIMERLOOP
+#ifdef LRBTIMERLOOP
 	s_loopType = RunLoopType::RLT_TIMER;
 
 	do 

@@ -6,20 +6,20 @@
 
 namespace lrb {
 
-#define TIMERLOOP
+#define LRBTIMERLOOP
 
 	enum class RunLoopType {
 		RLT_LOGIC = 0,		//必须放在开始
 //		RLT_RENDER,
 //		RLT_NET,
-#ifdef TIMERLOOP
+#ifdef LRBTIMERLOOP
 		RLT_TIMER,		// 必须放在最后
 #endif
 		RLT_TOP
 	};
 
 
-#ifdef TIMERLOOP
+#ifdef LRBTIMERLOOP
 	#define LOOPLEN (int)RunLoopType::RLT_TOP - 1
 	class TimerManager;
 #else
@@ -49,7 +49,7 @@ namespace lrb {
 
 		static TaskManager s_taskManager[LOOPLEN][(int)RunLoopType::RLT_TOP];
 		static LoopPoller s_poller[(int)RunLoopType::RLT_TOP];
-#ifdef TIMERLOOP
+#ifdef LRBTIMERLOOP
 		static TimerManager s_timerManager[(int)RunLoopType::RLT_TOP-1];
 #endif
 	};
