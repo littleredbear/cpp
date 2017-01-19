@@ -6,7 +6,6 @@
 #include "lrbRunLoop.h"
 #include <map>
 #include <sys/time.h>
-#include "lrbBase.h"
 
 
 namespace lrb {
@@ -67,9 +66,9 @@ namespace lrb {
 		~TimerTask();
 		
 		void bindNextTask(TimerTask *task);
-		bool setTimerTask(const std::function<void()> &func, const struct timeval *tv);
+		bool setTimerTask(const std::function<void()> &func, const timeval *tv);
 		const std::function<void()> &execFunc();
-		const struct timeval &execTime();
+		const timeval &execTime();
 		
 		TaskState taskState();
 		void setDone();
@@ -80,7 +79,7 @@ namespace lrb {
 		std::function<void()> m_func;
 		TaskState m_state;
 		TimerTask *m_next;
-		struct timeval m_tv;
+		timeval m_tv;
 	};
 
 //-----------------------------Timer Manager------------------------
@@ -92,16 +91,16 @@ namespace lrb {
 		TimerManager();
 		~TimerManager();
 
-		void addTask(const std::function<void()> &func, const struct timeval *tv);
+		void addTask(const std::function<void()> &func, const timeval *tv);
 		bool sortTask();
-		const struct timeval *execTask(RunLoopType type, const struct timeval *tv);
+		const timeval *execTask(RunLoopType type, const timeval *tv);
 
 	private:
 		TimerTask *m_addTask;
 		TimerTask *m_execTask;
 		uint32_t m_size;
 		std::vector<void *> m_ptrs;
-		std::multimap<struct timeval, std::function<void()> > m_tasks;
+		std::multimap<timeval, std::function<void()> > m_tasks;
 		TimerTask m_atasks[s_defaultNum];
 	};
 

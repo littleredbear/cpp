@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <limits.h>
+#include "lrbBase.h"
 
 using namespace lrb;
 
@@ -130,7 +131,7 @@ void TimerTask::bindNextTask(TimerTask *task)
 	m_next = task;
 }
 
-bool TimerTask::setTimerTask(const std::function<void()> &func, const struct timeval *tv)
+bool TimerTask::setTimerTask(const std::function<void()> &func, const timeval *tv)
 {
 	assert(tv != NULL);
 
@@ -149,7 +150,7 @@ const std::function<void()> &TimerTask::execFunc()
 	return m_func;
 }
 
-const struct timeval &TimerTask::execTime()
+const timeval &TimerTask::execTime()
 {
 	return m_tv;
 }
@@ -190,7 +191,7 @@ TimerManager::~TimerManager()
 		free(ptr);
 }
 
-void TimerManager::addTask(const std::function<void()> &func, const struct timeval *tv)
+void TimerManager::addTask(const std::function<void()> &func, const timeval *tv)
 {
 	if (m_addTask->nextTask()->setTimerTask(func, tv) == false) 
 	{
@@ -226,7 +227,7 @@ bool TimerManager::sortTask()
 	return false;
 }
 
-const struct timeval *TimerManager::execTask(RunLoopType type, const struct timeval *tv)
+const timeval *TimerManager::execTask(RunLoopType type, const timeval *tv)
 {
 	assert(tv != NULL);
 

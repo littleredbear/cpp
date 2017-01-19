@@ -2,6 +2,7 @@
 #define _LRB_RUN_LOOP_H
 
 #include "lrbLoopPoller.h"
+#include <sys/time.h>
 
 namespace lrb {
 
@@ -20,15 +21,15 @@ namespace lrb {
 
 #ifdef TIMERLOOP
 	#define LOOPLEN (int)RunLoopType::RLT_TOP - 1
+	class TimerManager;
 #else
 	#define LOOPLEN (int)RunLoopType::RLT_TOP
 #endif
-
 	class TaskManager;
 	class RunLoop {
 	public:
 		static void initRunLoop(const std::function<void()> &func);
-		static void runInLoop(const std::function<void()> &func, RunLoopType type, const struct timeval *tv == NULL);
+		static void runInLoop(const std::function<void()> &func, RunLoopType type, const timeval *tv = NULL);
 
 //		RunLoop();
 //		RunLoop(RunLoopType type);
@@ -43,13 +44,12 @@ namespace lrb {
 		static void startNewLoop(RunLoopType type);
 		static void startTimerLoop();
 		static void startLogicLoop(const std::function<void()> &func);
-		
+	
 //		RunLoopType m_loopType;
 
 		static TaskManager s_taskManager[LOOPLEN][(int)RunLoopType::RLT_TOP];
 		static LoopPoller s_poller[(int)RunLoopType::RLT_TOP];
 #ifdef TIMERLOOP
-		class TimerManager;
 		static TimerManager s_timerManager[(int)RunLoopType::RLT_TOP-1];
 #endif
 	};

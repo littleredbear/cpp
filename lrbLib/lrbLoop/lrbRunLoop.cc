@@ -1,9 +1,9 @@
 #include "lrbRunLoop.h"
 #include <thread>
 #include <assert.h>
-#include "lrbTask.h"
 #include <algorithm>
-#include <sys/time.h>
+#include "lrbTask.h"
+#include "lrbBase.h"
 
 
 using namespace lrb;
@@ -54,14 +54,22 @@ void RunLoop::initRunLoop(const std::function<void()> &func)
 //
 //}
 
-void RunLoop::runInLoop(const std::function<void()> &func, RunLoopType type, const struct timeval *tv)
+void RunLoop::runInLoop(const std::function<void()> &func, RunLoopType type, const timeval *tv)
 {
 	if (!func)
 		return;
 
-	s_taskManager[(int)type][(int)s_loopType].addTask(func);
-	if (type != s_loopType)
-		s_poller[(int)type].notify();
+	if (tv != NULL)
+	{
+#ifdef TIMERLOOP
+		s_timerManager[(int)type].addTask(func, tv);
+		s_poller[(int)RunLoopType::RLT_TIMER].notify();
+#endif
+	} else {
+		s_taskManager[(int)type][(int)s_loopType].addTask(func);
+		if (type != s_loopType)
+			s_poller[(int)type].notify();
+	}
 }
 
 bool RunLoop::execTask()
@@ -74,13 +82,15 @@ bool RunLoop::execTask()
 	return ret;
 }
 
+
 void RunLoop::timerFunc()
 {
+#ifdef TIMERLOOP
 	s_loopType = RunLoopType::RLT_TIMER;
 
 	do 
 	{
-		const struct timeval *rtv = NULL;
+		const timeval *rtv = NULL;
 		bool res = false;
 		struct timeval ntv;
 
@@ -90,7 +100,7 @@ void RunLoop::timerFunc()
 			for (int t=0;t<(int)RunLoopType::RLT_TOP-1;++t) 
 			{
 				res = s_timerManager[t].sortTask() || res;
-				const struct timeval *tmv = s_timerManager[t].execTask((RunLoopType)t, &ntv);
+				const timeval *tmv = s_timerManager[t].execTask((RunLoopType)t, &ntv);
 				if (tmv == NULL) 
 					continue;
 				
@@ -109,7 +119,7 @@ void RunLoop::timerFunc()
 			if ((*rtv) < ntv)
 				continue;
 			else
-				timeout = (std::min(2100000, rtv->tv_sec - ntv.tv_sec)) * 1000 + (rtv->tv_usec - ntv.tv_usec) / 1000;
+				timeout = (std::min(2100000, (int)(rtv->tv_sec - ntv.tv_sec))) * 1000 + (int)(rtv->tv_usec - ntv.tv_usec) / 1000;
 			if (timeout <= 0)
 				continue;
 		}
@@ -117,6 +127,7 @@ void RunLoop::timerFunc()
 		s_poller[(int)s_loopType].poll(timeout);
 		
 	} while(1);
+#endif
 }
 
 void RunLoop::loopFunc(RunLoopType type)
@@ -151,6 +162,7 @@ void RunLoop::startLogicLoop(const std::function<void()> &func)
 	runInLoop(func, s_loopType);
 	loopFunc(s_loopType);
 }
+
 
 
 
