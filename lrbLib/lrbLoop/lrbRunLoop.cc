@@ -10,9 +10,7 @@ using namespace lrb;
 
 TaskManager RunLoop::s_taskManager[LOOPLEN][(int)RunLoopType::RLT_TOP];
 LoopPoller RunLoop::s_poller[(int)RunLoopType::RLT_TOP];
-#ifdef LRBTIMERLOOP
 	TimerManager RunLoop::s_timerManager[(int)RunLoopType::RLT_TOP-1];
-#endif
 
 namespace {
 	__thread RunLoopType s_loopType = RunLoopType::RLT_LOGIC;
@@ -28,9 +26,7 @@ void RunLoop::initRunLoop(const std::function<void()> &func)
 		startNewLoop((RunLoopType)i);
 	}
 
-#ifdef LRBTIMERLOOP
 	startTimerLoop();
-#endif
 	
 	startLogicLoop(func);
 
@@ -61,15 +57,25 @@ void RunLoop::runInLoop(const std::function<void()> &func, RunLoopType type, con
 
 	if (tv != NULL)
 	{
-#ifdef LRBTIMERLOOP
 		s_timerManager[(int)type].addTask(func, tv);
 		s_poller[(int)RunLoopType::RLT_TIMER].notify();
-#endif
 	} else {
 		s_taskManager[(int)type][(int)s_loopType].addTask(func);
-		if (type != s_loopType)
-			s_poller[(int)type].notify();
+		notifyLoop(type);
 	}
+}
+
+RunLoopType RunLoop::currentLoopType()
+{
+	return s_loopType;
+}
+
+void RunLoop::notifyLoop(RunLoopType type)
+{
+	if (s_loopType == type)
+		return;
+	
+	s_poller[(int)type].notify();
 }
 
 bool RunLoop::execTask()
@@ -85,7 +91,6 @@ bool RunLoop::execTask()
 
 void RunLoop::timerFunc()
 {
-#ifdef LRBTIMERLOOP
 	s_loopType = RunLoopType::RLT_TIMER;
 
 	do 
@@ -127,7 +132,6 @@ void RunLoop::timerFunc()
 		s_poller[(int)s_loopType].poll(timeout);
 		
 	} while(1);
-#endif
 }
 
 void RunLoop::loopFunc(RunLoopType type)

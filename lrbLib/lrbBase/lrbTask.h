@@ -31,9 +31,9 @@ namespace lrb {
 		void bindNextNode(TaskNode *next);
 		
 	private:
-		std::function<void()> m_func;
 		TaskState m_state;
 		TaskNode *m_next;
+		std::function<void()> m_func;
 	};
 
 //----------------------------Task Manager-------------------
@@ -53,7 +53,6 @@ namespace lrb {
 		TaskNode *m_execTask;
 		uint32_t m_size;
 		std::vector<void *> m_ptrs;
-
 		TaskNode m_tasks[s_defaultTaskNum];
 		
 	};
@@ -76,10 +75,10 @@ namespace lrb {
 		TimerTask *nextTask();
 		
 	private:
-		std::function<void()> m_func;
 		TaskState m_state;
 		TimerTask *m_next;
 		timeval m_tv;
+		std::function<void()> m_func;
 	};
 
 //-----------------------------Timer Manager------------------------

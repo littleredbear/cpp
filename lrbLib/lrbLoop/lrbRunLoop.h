@@ -6,30 +6,28 @@
 
 namespace lrb {
 
-#define LRBTIMERLOOP
-
 	enum class RunLoopType {
 		RLT_LOGIC = 0,		//必须放在开始
 //		RLT_RENDER,
 //		RLT_NET,
-#ifdef LRBTIMERLOOP
+
+		RLT_LOG,		// 必须放在倒数2位
 		RLT_TIMER,		// 必须放在最后
-#endif
 		RLT_TOP
 	};
 
 
-#ifdef LRBTIMERLOOP
-	#define LOOPLEN (int)RunLoopType::RLT_TOP - 1
+#define LOOPLEN (int)RunLoopType::RLT_TOP - 1
 	class TimerManager;
-#else
-	#define LOOPLEN (int)RunLoopType::RLT_TOP
-#endif
 	class TaskManager;
+
 	class RunLoop {
 	public:
 		static void initRunLoop(const std::function<void()> &func);
+		// type can't be RLT_TIMER
 		static void runInLoop(const std::function<void()> &func, RunLoopType type, const timeval *tv = NULL);
+		static RunLoopType currentLoopType();
+		static void notifyLoop(RunLoopType type);
 
 //		RunLoop();
 //		RunLoop(RunLoopType type);
@@ -49,9 +47,8 @@ namespace lrb {
 
 		static TaskManager s_taskManager[LOOPLEN][(int)RunLoopType::RLT_TOP];
 		static LoopPoller s_poller[(int)RunLoopType::RLT_TOP];
-#ifdef LRBTIMERLOOP
 		static TimerManager s_timerManager[(int)RunLoopType::RLT_TOP-1];
-#endif
+
 	};
 
 }

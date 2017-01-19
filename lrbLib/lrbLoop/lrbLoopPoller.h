@@ -17,8 +17,8 @@ namespace lrb {
 		void pollFunc(int fd, short events);
 
 	private:
-		Poller m_poller;
 		int m_ntyFd;
+		Poller m_poller;
 	};
 
 }
