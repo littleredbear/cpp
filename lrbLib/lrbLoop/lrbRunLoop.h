@@ -1,38 +1,57 @@
 #ifndef _LRB_RUN_LOOP_H
 #define _LRB_RUN_LOOP_H
 
-#include "lrbTask.h"
 #include "lrbLoopPoller.h"
 
 namespace lrb {
 
+#define TIMERLOOP
+
 	enum class RunLoopType {
-		RLT_LOGIC = 0,
+		RLT_LOGIC = 0,		//必须放在开始
 //		RLT_RENDER,
 //		RLT_NET,
-		RLT_TIMER,
+#ifdef TIMERLOOP
+		RLT_TIMER,		// 必须放在最后
+#endif
 		RLT_TOP
 	};
 
+
+#ifdef TIMERLOOP
+	#define LOOPLEN (int)RunLoopType::RLT_TOP - 1
+#else
+	#define LOOPLEN (int)RunLoopType::RLT_TOP
+#endif
+
+	class TaskManager;
 	class RunLoop {
 	public:
-		static void initRunLoop(const std::function<void()> &func, RunLoopType type);
-		
-		RunLoop();
-		RunLoop(RunLoopType type);
-		~RunLoop();
-		
-		void runInLoop(const std::function<void()> &func, RunLoopType type);
-		bool execTask();
-	
-		void loopFunc();
-		void startLoop();
+		static void initRunLoop(const std::function<void()> &func);
+		static void runInLoop(const std::function<void()> &func, RunLoopType type, const struct timeval *tv == NULL);
+
+//		RunLoop();
+//		RunLoop(RunLoopType type);
+//		~RunLoop();
 		
 	private:
-		RunLoopType m_loopType;
+	
+		static bool execTask();
+	
+		static void timerFunc();
+		static void loopFunc(RunLoopType type);
+		static void startNewLoop(RunLoopType type);
+		static void startTimerLoop();
+		static void startLogicLoop(const std::function<void()> &func);
+		
+//		RunLoopType m_loopType;
 
-		static TaskManager s_taskManager[(int)RunLoopType::RLT_TOP][(int)RunLoopType::RLT_TOP];
+		static TaskManager s_taskManager[LOOPLEN][(int)RunLoopType::RLT_TOP];
 		static LoopPoller s_poller[(int)RunLoopType::RLT_TOP];
+#ifdef TIMERLOOP
+		class TimerManager;
+		static TimerManager s_timerManager[(int)RunLoopType::RLT_TOP-1];
+#endif
 	};
 
 }

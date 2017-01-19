@@ -2,7 +2,7 @@
 #define _LRB_LOOP_POLLER_H
 
 
-#include "Poller.h"
+#include "lrbPoller.h"
 
 
 namespace lrb {
@@ -12,9 +12,9 @@ namespace lrb {
 		LoopPoller();
 		~LoopPoller();
 
-		void poll(int timeout);
+		void poll(int timeout = -1);
 		void notify();
-		void pollFunc(short events);
+		void pollFunc(int fd, short events);
 
 	private:
 		Poller m_poller;

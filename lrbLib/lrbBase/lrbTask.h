@@ -3,6 +3,10 @@
 
 #include <functional>
 #include <vector>
+#include "lrbRunLoop.h"
+#include <map>
+#include <sys/time.h>
+#include "lrbBase.h"
 
 
 namespace lrb {
@@ -33,48 +37,72 @@ namespace lrb {
 		TaskNode *m_next;
 	};
 
-
-
-//----------------------------Task Node Handler-------------------
-
-	class TaskNodeHandler {
-	public:
-		TaskNodeHandler();
-		TaskNodeHandler(TaskNode *node);
-		~TaskNodeHandler();
-
-		void bindTaskNode(TaskNode *node, uint32_t size);
-
-		void addTask(const std::function<void()> &func);
-		bool execTask();
-		void next();
-
-	private:
-		TaskNode *m_taskNode;
-		uint32_t m_size;
-		std::vector<void *> m_ptrs;
-		
-	};
-
-
-//----------------------------Task Manager--------------------------
+//----------------------------Task Manager-------------------
 
 	class TaskManager {
 	public:
 		const static int s_defaultTaskNum = 128;
-		
+
 		TaskManager();
 		~TaskManager();
 
 		void addTask(const std::function<void()> &func);
 		bool execTask();
-	
+
 	private:
+		TaskNode *m_addTask;
+		TaskNode *m_execTask;
+		uint32_t m_size;
+		std::vector<void *> m_ptrs;
+
 		TaskNode m_tasks[s_defaultTaskNum];
+		
+	};
 
-		TaskNodeHandler m_execHandler;
-		TaskNodeHandler m_addHandler;
+//--------------------------Timer Task---------------------------
 
+	class TimerTask {
+	public:
+		TimerTask();
+		~TimerTask();
+		
+		void bindNextTask(TimerTask *task);
+		bool setTimerTask(const std::function<void()> &func, const struct timeval *tv);
+		const std::function<void()> &execFunc();
+		const struct timeval &execTime();
+		
+		TaskState taskState();
+		void setDone();
+		
+		TimerTask *nextTask();
+		
+	private:
+		std::function<void()> m_func;
+		TaskState m_state;
+		TimerTask *m_next;
+		struct timeval m_tv;
+	};
+
+//-----------------------------Timer Manager------------------------
+
+	class TimerManager {
+	public:
+		const static int s_defaultNum = 128;
+
+		TimerManager();
+		~TimerManager();
+
+		void addTask(const std::function<void()> &func, const struct timeval *tv);
+		bool sortTask();
+		const struct timeval *execTask(RunLoopType type, const struct timeval *tv);
+
+	private:
+		TimerTask *m_addTask;
+		TimerTask *m_execTask;
+		uint32_t m_size;
+		std::vector<void *> m_ptrs;
+		std::multimap<struct timeval, std::function<void()> > m_tasks;
+		TimerTask m_atasks[s_defaultNum];
 	};
 
 }

@@ -1,6 +1,7 @@
 #include "lrbPoller.h"
 #include <assert.h>
 #include <errno.h>
+#include <algorithm>
 
 
 using namespace lrb;
@@ -32,11 +33,11 @@ void Poller::poll(int timeout)
 			continue;
 		
 		if (m_funcs[i])
-			m_funcs[i](m_pfds[i].revents);
+			m_funcs[i](m_pfds[i].fd, m_pfds[i].revents);
 	}
 }
 
-int Poller::addPollFd(int fd, short events, const std::function<void(short)> &func)
+int Poller::addPollFd(int fd, short events, const std::function<void(int, short)> &func)
 {
 	pollfd pfd;
 	pfd.fd = fd;
@@ -85,6 +86,18 @@ void Poller::removePollFd(int handler)
 	m_funcs.pop_back();
 	m_fhandlers.pop_back();
 	m_rhandlers.push_back(handler);
+}
+
+void Poller::updatePollFd(int handler, short events)
+{
+	assert(handler <= m_handlers.size());
+	
+	int idx = m_handlers[handler];
+	if (idx >= m_pfds.size())
+		return;
+	
+	m_pfds[idx].events = events;
+	m_pfds[idx].revents = 0;
 }
 
 

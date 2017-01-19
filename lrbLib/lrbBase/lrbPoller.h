@@ -13,15 +13,16 @@ namespace lrb {
 		~Poller();
 
 		void poll(int timeout);
-		int addPollFd(int fd, short events, const std::function<void(short)> &func);
+		int addPollFd(int fd, short events, const std::function<void(int, short)> &func);
 		void removePollFd(int handler);
+		void updatePollFd(int handler, short events);
 
 	private:
 		std::vector<pollfd> m_pfds;
 		std::vector<int> m_handlers;
 		std::vector<int> m_rhandlers;
 		std::vector<int> m_fhandlers;
-		std::vector<const std::function<void(short)> > m_funcs;
+		std::vector<std::function<void(int, short)> > m_funcs;
 
 	};
 
