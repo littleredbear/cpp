@@ -9,7 +9,7 @@
 
 using namespace lrb;
 
-TaskManager RunLoop::s_taskManager[LOOPLEN][(int)RunLoopType::RLT_TOP];
+TaskManager RunLoop::s_taskManager[(int)RunLoopType::RLT_TOP-1][(int)RunLoopType::RLT_TOP];
 LoopPoller RunLoop::s_poller[(int)RunLoopType::RLT_TOP];
 	TimerManager RunLoop::s_timerManager[(int)RunLoopType::RLT_TOP-1];
 
@@ -22,12 +22,13 @@ void RunLoop::initRunLoop(const std::function<void()> &func)
 {
 	assert(func);
 
-	for (int i = 1; i < LOOPLEN; ++i) 
+	for (int i = 1; i < (int)RunLoopType::RLT_TOP-2; ++i) 
 	{
 		startNewLoop((RunLoopType)i);
 	}
 
 	startTimerLoop();
+	startLogLoop();
 	
 	startLogicLoop(func);
 
@@ -201,8 +202,6 @@ void RunLoop::startLogLoop()
 void RunLoop::startLogicLoop(const std::function<void()> &func)
 {
 	s_loopType = RunLoopType::RLT_LOGIC;
-
-	Logger::initLogger();
 	
 	runInLoop(func, s_loopType);
 	loopFunc(s_loopType);

@@ -17,7 +17,6 @@ namespace lrb {
 	};
 
 
-#define LOOPLEN (int)RunLoopType::RLT_TOP - 1
 	class TimerManager;
 	class TaskManager;
 
@@ -48,7 +47,7 @@ namespace lrb {
 	
 //		RunLoopType m_loopType;
 
-		static TaskManager s_taskManager[LOOPLEN][(int)RunLoopType::RLT_TOP];
+		static TaskManager s_taskManager[(int)RunLoopType::RLT_TOP-1][(int)RunLoopType::RLT_TOP];
 		static LoopPoller s_poller[(int)RunLoopType::RLT_TOP];
 		static TimerManager s_timerManager[(int)RunLoopType::RLT_TOP-1];
 
