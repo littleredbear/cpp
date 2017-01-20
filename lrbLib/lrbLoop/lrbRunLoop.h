@@ -26,7 +26,8 @@ namespace lrb {
 		static void initRunLoop(const std::function<void()> &func);
 		// type can't be RLT_TIMER
 		static void runInLoop(const std::function<void()> &func, RunLoopType type, const timeval *tv = NULL);
-		static RunLoopType currentLoopType();
+		static RunLoopType loopType();
+		static const char *loopName();
 		static void notifyLoop(RunLoopType type);
 
 //		RunLoop();
@@ -38,9 +39,11 @@ namespace lrb {
 		static bool execTask();
 	
 		static void timerFunc();
+		static void logFunc();
 		static void loopFunc(RunLoopType type);
 		static void startNewLoop(RunLoopType type);
 		static void startTimerLoop();
+		static void startLogLoop();
 		static void startLogicLoop(const std::function<void()> &func);
 	
 //		RunLoopType m_loopType;

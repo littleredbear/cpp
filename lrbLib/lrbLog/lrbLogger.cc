@@ -1,6 +1,12 @@
 #include "lrbLogger.h"
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <fcntl.h>
 
-Logger Logger::s_logger[(int)RunLoopType::RLT_TOP-2];
+using namespace lrb;
+
+LogManager Logger::s_logManager[(int)RunLoopType::RLT_TOP-2];
 
 //---------------------------------Log Cache------------------------------
 
@@ -23,8 +29,6 @@ size_t LogCache::addLog(const void *data, size_t size)
 		return 0;
 
 	size_t left = std::min(s_cacheSize - m_logSize, size);
-	if (left <= 0)
-		return 0;
 	
 	memcpy(m_cache+m_logSize, data, left);
 	m_logSize += left;
@@ -38,17 +42,25 @@ size_t LogCache::addLog(const void *data, size_t size)
 	return left;
 }
 
-bool LogCache::flush(int fd)
+FlushState LogCache::flush(int fd)
 {
 	if (m_state != CacheState::CS_TOFLUSH ||
 	    m_logSize <= 0)
-		return false;
+		return FlushState::FS_FAIL;
 
-	write(fd, m_cache, m_logSize);
+	int ret = write(fd, m_cache, m_logSize);
+	if (ret == -1) {
+		if (errno == EBADF)
+		{
+			return FlushState::FS_BADFD;
+		}
+		return FlushState::FS_FAIL;
+	}
+
 	m_logSize = 0;
 	m_state = CacheState::CS_TOADD;
 
-	return true;
+	return FlushState::FS_SUCCESS;
 }
 
 bool LogCache::toFlush()
@@ -75,30 +87,112 @@ LogCache *LogCache::nextCache()
 
 //-------------------------------Log Manager----------------------------
 
-LogManager::LogManager()
+LogManager::LogManager():
+m_addCache(NULL),
+m_logCache(NULL),
+m_fd(-1)
 {
 
 }
 
 LogManager::~LogManager()
 {
+	LogCache *next = m_logCache->nextCache();
+	do
+	{
+		LogCache *curr = next;
+		next = next->nextCache();
+		free(curr);
+	}while(next != m_logCache);
 
+	if (m_fd != -1)
+		close(m_fd);
+}
+
+void LogManager::initLogFile()
+{
+	if (m_fd != -1)
+		close(m_fd);
+
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	char buff[128] = {0};
+	snprintf(buff, 128, "log/%s-%ld.log", RunLoop::loopName(), tv.tv_sec);
+	m_fd = open(buff, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK);
+
+	if (m_addCache == NULL && m_logCache == NULL)
+	{
+		LogCache *ptr = (LogCache *)calloc(1, sizeof(LogCache));
+		if (ptr == NULL)
+			return;
+		
+		ptr->bindNextCache(ptr);
+		m_addCache = ptr;
+		m_logCache = ptr;
+	}
 }
 
 void LogManager::addLog(const void *data, size_t size)
 {
+	if (m_fd == -1 || size <= 0)
+		return;
 
+	const char *dptr = (const char *)data;
+	size_t left = size;
+	do
+	{
+		size_t as= m_addCache->nextCache()->addLog(dptr, left);
+		if (as == 0)
+		{
+			LogCache *ptr = (LogCache *)calloc(1, sizeof(LogCache));
+			if (ptr == NULL)
+				return;
+
+			ptr->bindNextCache(m_addCache->nextCache());
+			m_addCache->bindNextCache(ptr);
+		} else if (as < left)
+		{
+			m_addCache = m_addCache->nextCache();
+		}
+
+		dptr += as;
+		left -= as;
+		
+	}while(left > 0);
 }
 
 void LogManager::flush()
 {
+	if (m_fd == -1)
+		return;
+
+	do
+	{
+		FlushState state = m_logCache->flush(m_fd);
+		if (state == FlushState::FS_SUCCESS)
+		{
+			m_logCache = m_logCache->nextCache();
+			continue;
+		}
+		
+		if (state == FlushState::FS_BADFD)
+			initLogFile();
+		
+		break;
+
+	} while(1);
 
 }
 
 void LogManager::flushAll()
 {
 	LogCache *cache = m_logCache;
+	while(cache->toFlush())
+	{
+		cache = cache->nextCache();
+	}
 	
+	RunLoop::notifyLoop(RunLoopType::RLT_LOG);
 }
 
 
@@ -106,28 +200,39 @@ void LogManager::flushAll()
 
 void Logger::logData(const void *data, size_t size)
 {
-	s_logger[(int)RunLoop::currentLoopType()].doLogData(data, size);
+	s_logManager[(int)RunLoop::loopType()].addLog(data, size);
+}
+
+void Logger::flush()
+{
+	for (int i=0;i<(int)RunLoopType::RLT_TOP-2;++i)
+		s_logManager[i].flush();
 }
 
 void Logger::flushAll()
 {
 	for (int i=0;i<(int)RunLoopType::RLT_TOP-2;++i)
-		s_logger[i].flush();
+		s_logManager[i].flushAll();
 }
 
-Logger::Logger():
-m_fp(NULL)
+void Logger::initLogger()
 {
+	s_logManager[(int)RunLoop::loopType()].initLogFile();
+}
+
+//Logger::Logger():
+//m_fp(NULL)
+//{
 	
-}
+//}
 
-Logger::~Logger()
-{
+//Logger::~Logger()
+//{
 
-}
+//}
 
-void Logger::flush()
-{
-	fflush(m_fp);
-}
+//void Logger::flush()
+//{
+//	fflush(m_fp);
+//}
 

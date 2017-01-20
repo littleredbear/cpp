@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "lrbTask.h"
 #include "lrbBase.h"
+#include "lrbLogger.h"
 
 
 using namespace lrb;
@@ -65,9 +66,27 @@ void RunLoop::runInLoop(const std::function<void()> &func, RunLoopType type, con
 	}
 }
 
-RunLoopType RunLoop::currentLoopType()
+RunLoopType RunLoop::loopType()
 {
 	return s_loopType;
+}
+
+const char *RunLoop::loopName()
+{
+	switch(s_loopType)
+	{
+	case RunLoopType::RLT_LOGIC:
+		return "LogicLoop";
+
+	case RunLoopType::RLT_LOG:
+		return "LogLoop";
+	
+	case RunLoopType::RLT_TIMER:
+		return "TimerLoop";
+
+	default:
+		return "";
+	}
 }
 
 void RunLoop::notifyLoop(RunLoopType type)
@@ -134,9 +153,22 @@ void RunLoop::timerFunc()
 	} while(1);
 }
 
+void RunLoop::logFunc()
+{
+	s_loopType = RunLoopType::RLT_LOG;
+	
+	do 
+	{
+		Logger::flush();
+		s_poller[(int)s_loopType].poll();
+	}while(1);
+}
+
 void RunLoop::loopFunc(RunLoopType type)
 {
 	s_loopType = type;
+
+	Logger::initLogger();
 
 	do 
 	{
@@ -160,9 +192,18 @@ void RunLoop::startTimerLoop()
 	th.detach();
 }
 
+void RunLoop::startLogLoop()
+{
+	std::thread th(std::bind(RunLoop::logFunc));
+	th.detach();
+}
+
 void RunLoop::startLogicLoop(const std::function<void()> &func)
 {
 	s_loopType = RunLoopType::RLT_LOGIC;
+
+	Logger::initLogger();
+	
 	runInLoop(func, s_loopType);
 	loopFunc(s_loopType);
 }

@@ -11,6 +11,12 @@ namespace lrb {
 		CS_TOFLUSH
 	};
 
+	enum class FlushState {
+		FS_SUCCESS,
+		FS_BADFD,
+		FS_FAIL
+	};
+
 //-----------------------Log Cache---------------------------
 
 	class LogCache {
@@ -21,7 +27,7 @@ namespace lrb {
 		~LogCache();
 
 		size_t addLog(const void *data, size_t size);
-		bool flush(int fd);
+		FlushState flush(int fd);
 		bool toFlush();
 
 		void bindNextCache(LogCache *next);
@@ -41,6 +47,7 @@ namespace lrb {
 		LogManager();
 		~LogManager();
 		
+		void initLogFile();
 		void addLog(const void *data, size_t size);
 		void flush();
 		void flushAll();
@@ -57,19 +64,21 @@ namespace lrb {
 	class Logger {
 	public:
 		static void logData(const void *data, size_t size);
+		static void flush();
 		static void flushAll();
+		static void initLogger();
 
-		Logger();
-		~Logger();
+//		Logger();
+//		~Logger();
 
-		void flush();
+//		void flush();
 
 	private:
-		void doLogData(const void *data, size_t size);
+//		void doLogData(const void *data, size_t size);
 
-		FILE *m_fp;
+//		FILE *m_fp;
 		
-		static Logger s_logger[(int)RunLoopType::RLT_TOP];
+		static LogManager s_logManager[(int)RunLoopType::RLT_TOP-2];
 	};
 
 }
