@@ -27,8 +27,8 @@ void RunLoop::initRunLoop(const std::function<void()> &func)
 		startNewLoop((RunLoopType)i);
 	}
 
-	startTimerLoop();
 	startLogLoop();
+	startTimerLoop();
 	
 	startLogicLoop(func);
 

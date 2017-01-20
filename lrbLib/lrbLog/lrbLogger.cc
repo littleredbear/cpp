@@ -3,7 +3,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <iostream>
 
 using namespace lrb;
 
@@ -60,7 +59,6 @@ FlushState LogCache::flush(int fd)
 
 	m_logSize = 0;
 	m_state = CacheState::CS_TOADD;
-	std::cout << "write succ" << std::endl;
 
 	return FlushState::FS_SUCCESS;
 }
@@ -120,7 +118,7 @@ void LogManager::initLogFile()
 	gettimeofday(&tv, NULL);
 	char buff[128] = {0};
 	snprintf(buff, 128, "%s-%ld.log", RunLoop::loopName(), tv.tv_sec);
-	m_fd = open(buff, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK);
+	m_fd = open(buff, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 00644);
 
 	if (m_addCache == NULL && m_logCache == NULL)
 	{
