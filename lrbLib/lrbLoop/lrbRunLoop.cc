@@ -11,7 +11,7 @@ using namespace lrb;
 
 TaskManager RunLoop::s_taskManager[(int)RunLoopType::RLT_TOP-1][(int)RunLoopType::RLT_TOP];
 LoopPoller RunLoop::s_poller[(int)RunLoopType::RLT_TOP];
-	TimerManager RunLoop::s_timerManager[(int)RunLoopType::RLT_TOP-1];
+TimerManager RunLoop::s_timerManager[(int)RunLoopType::RLT_TOP-1];
 
 namespace {
 	__thread RunLoopType s_loopType = RunLoopType::RLT_LOGIC;

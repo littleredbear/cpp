@@ -4,22 +4,28 @@
 #include "lrbPoller.h"
 
 namespace lrb {
+
+//-------------------------------Net Task----------------------------------
 	
 	class NetTask {
 	public:
 		NetTask();
 		~NetTask();
 
-		bool setNetTask(void *data, size_t size);
+		bool setNetTask(int fd, const void *data, size_t size);
+		bool execNextTask();
 
 		void bindNextTask(NetTask *next);
 		NetTask *nextTask();
 
 	private:
-		void *m_data;
+		int m_fd;
+		const void *m_data;
 		size_t m_size;
 		NetTask *m_next;
 	};
+
+//---------------------------------------Net Manager------------------------------
 
 	class NetManager {
 
