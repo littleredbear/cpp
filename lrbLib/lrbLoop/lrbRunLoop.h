@@ -9,8 +9,8 @@ namespace lrb {
 	enum class RunLoopType {
 		RLT_LOGIC = 0,		//必须放在开始
 //		RLT_RENDER,
-//		RLT_NET,
 
+		RLT_NET,		// 必须放在倒数3位
 		RLT_LOG,		// 必须放在倒数2位
 		RLT_TIMER,		// 必须放在最后
 		RLT_TOP
