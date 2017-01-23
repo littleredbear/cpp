@@ -33,13 +33,12 @@ namespace lrb {
 
 	class NetWork {
 	public:
-		static void connect();
+		static void connect(const char *addr, short port);
 		static void disConnect(int fd);
 		static void sendData(int fd, const char *data, size_t size);
 		static void eventFunc(int fd, short events);
 
 	private:
-		Poller m_poller;
 
 	};
 

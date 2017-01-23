@@ -1,10 +1,8 @@
 #ifndef _LRB_LOGGER_H
 #define _LRB_LOGGER_H
 
-#include "lrbRunLoop.h"
 
 namespace lrb {
-
 
 	enum class CacheState {
 		CS_TOADD = 0,
@@ -35,6 +33,7 @@ namespace lrb {
 
 	private:
 		CacheState m_state;
+		size_t m_flushSize;
 		size_t m_logSize;
 		LogCache *m_next;
 		char m_cache[s_cacheSize];
@@ -50,7 +49,7 @@ namespace lrb {
 		void initLogFile();
 		void addLog(const void *data, size_t size);
 		void flush();
-		void flushAll();
+		void toFlush();
 
 	private:
 		LogCache *m_addCache;
@@ -65,7 +64,7 @@ namespace lrb {
 	public:
 		static void logData(const void *data, size_t size);
 		static void flush();
-		static void flushAll();
+		static void toFlush();
 		static void initLogger();
 
 //		Logger();
@@ -78,7 +77,6 @@ namespace lrb {
 
 //		FILE *m_fp;
 		
-		static LogManager s_logManager[(int)RunLoopType::RLT_TOP-2];
 	};
 
 }

@@ -9,11 +9,11 @@
 
 using namespace lrb;
 
-TaskManager RunLoop::s_taskManager[(int)RunLoopType::RLT_TOP-1][(int)RunLoopType::RLT_TOP];
-LoopPoller RunLoop::s_poller[(int)RunLoopType::RLT_TOP];
-TimerManager RunLoop::s_timerManager[(int)RunLoopType::RLT_TOP-1];
-
 namespace {
+	TaskManager s_taskManager[(int)RunLoopType::RLT_TOP-2][(int)RunLoopType::RLT_TOP];
+	LoopPoller s_poller[(int)RunLoopType::RLT_TOP];
+	TimerManager s_timerManager[(int)RunLoopType::RLT_TOP-1];
+
 	__thread RunLoopType s_loopType = RunLoopType::RLT_LOGIC;
 }
 
@@ -98,6 +98,11 @@ void RunLoop::notifyLoop(RunLoopType type)
 	s_poller[(int)type].notify();
 }
 
+void RunLoop::addPollFd(int fd, short events, const std::function<void(int, short)> &func)
+{
+	s_poller[(int)s_loopType].addPollFd(fd, events, func);
+}
+
 bool RunLoop::execTask()
 {
 	bool ret = false;
@@ -162,6 +167,7 @@ void RunLoop::logFunc()
 	{
 		Logger::flush();
 		s_poller[(int)s_loopType].poll();
+
 	}while(1);
 }
 

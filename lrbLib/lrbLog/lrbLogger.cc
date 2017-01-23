@@ -3,15 +3,18 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include "lrbRunLoop.h"
 
 using namespace lrb;
 
-LogManager Logger::s_logManager[(int)RunLoopType::RLT_TOP-2];
-
+namespace {
+	LogManager s_logManager[(int)RunLoopType::RLT_TOP-2];
+}
 //---------------------------------Log Cache------------------------------
 
 LogCache::LogCache():
 m_state(CacheState::CS_TOADD),
+m_flushSize(0),
 m_logSize(0),
 m_next(NULL)
 {
@@ -48,15 +51,23 @@ FlushState LogCache::flush(int fd)
 	    m_logSize <= 0)
 		return FlushState::FS_FAIL;
 
-	int ret = write(fd, m_cache, m_logSize);
-	if (ret == -1) {
-		if (errno == EBADF)
-		{
-			return FlushState::FS_BADFD;
+	size_t left = m_logSize - m_flushSize;
+	while(left > 0)
+	{
+		int ret = write(fd, m_cache + m_flushSize, left);
+		if (ret == -1) {
+			if (errno == EBADF)
+			{
+				return FlushState::FS_BADFD;
+			}
+			return FlushState::FS_FAIL;
 		}
-		return FlushState::FS_FAIL;
+
+		left -= ret;
+		m_flushSize += ret;
 	}
 
+	m_flushSize = 0;
 	m_logSize = 0;
 	m_state = CacheState::CS_TOADD;
 
@@ -184,7 +195,7 @@ void LogManager::flush()
 
 }
 
-void LogManager::flushAll()
+void LogManager::toFlush()
 {
 	if (m_logCache == NULL)
 		return;
@@ -214,10 +225,9 @@ void Logger::flush()
 		s_logManager[i].flush();
 }
 
-void Logger::flushAll()
+void Logger::toFlush()
 {
-	for (int i=0;i<(int)RunLoopType::RLT_TOP-2;++i)
-		s_logManager[i].flushAll();
+	s_logManager[(int)RunLoopType::loopType()].toFlush();
 }
 
 void Logger::initLogger()

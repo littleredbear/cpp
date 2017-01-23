@@ -1,8 +1,8 @@
 #ifndef _LRB_RUN_LOOP_H
 #define _LRB_RUN_LOOP_H
 
-#include "lrbLoopPoller.h"
 #include <sys/time.h>
+#include <functional>
 
 namespace lrb {
 
@@ -10,15 +10,11 @@ namespace lrb {
 		RLT_LOGIC = 0,		//必须放在开始
 //		RLT_RENDER,
 
-		RLT_NET,		// 必须放在倒数3位
+		RLT_NET,		
 		RLT_LOG,		// 必须放在倒数2位
 		RLT_TIMER,		// 必须放在最后
 		RLT_TOP
 	};
-
-
-	class TimerManager;
-	class TaskManager;
 
 	class RunLoop {
 	public:
@@ -28,6 +24,7 @@ namespace lrb {
 		static RunLoopType loopType();
 		static const char *loopName();
 		static void notifyLoop(RunLoopType type);
+		static void addPollFd(int fd, short events, const std::function<void(int, short)> &func);
 
 //		RunLoop();
 //		RunLoop(RunLoopType type);
@@ -46,11 +43,6 @@ namespace lrb {
 		static void startLogicLoop(const std::function<void()> &func);
 	
 //		RunLoopType m_loopType;
-
-		static TaskManager s_taskManager[(int)RunLoopType::RLT_TOP-1][(int)RunLoopType::RLT_TOP];
-		static LoopPoller s_poller[(int)RunLoopType::RLT_TOP];
-		static TimerManager s_timerManager[(int)RunLoopType::RLT_TOP-1];
-
 	};
 
 }
