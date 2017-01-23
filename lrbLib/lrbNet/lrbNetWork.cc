@@ -8,6 +8,7 @@ using namespace lrb;
 //-------------------------------Net Task-----------------------------
 
 NetTask::NetTask():
+m_fd(-1),
 m_data(NULL),
 m_size(0),
 m_next(NULL)
