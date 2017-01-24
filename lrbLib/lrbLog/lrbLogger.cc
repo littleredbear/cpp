@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include "lrbRunLoop.h"
+#include <algorithm>
 
 using namespace lrb;
 
@@ -39,7 +39,7 @@ size_t LogCache::addLog(const void *data, size_t size)
 	if (m_logSize >= s_cacheSize)
 	{
 		m_state = CacheState::CS_TOFLUSH;
-		RunLoop::notifyLoop(RunLoopType::RLT_LOG);
+		RunLoop::runInLoop(std::bind(Logger::flushLoop, RunLoop::loopType()), RunLoopType::RLT_LOG);
 	}
 
 	return left;
@@ -207,8 +207,6 @@ void LogManager::toFlush()
 		if (cache == m_logCache)
 			break;
 	}
-	
-	RunLoop::notifyLoop(RunLoopType::RLT_LOG);
 }
 
 
@@ -219,15 +217,16 @@ void Logger::logData(const void *data, size_t size)
 	s_logManager[(int)RunLoop::loopType()].addLog(data, size);
 }
 
-void Logger::flush()
+void Logger::flushLoop(RunLoopType type)
 {
-	for (int i=0;i<(int)RunLoopType::RLT_TOP-2;++i)
-		s_logManager[i].flush();
+	s_logManager[(int)type].flush();
 }
 
-void Logger::toFlush()
+void Logger::flush()
 {
-	s_logManager[(int)RunLoopType::loopType()].toFlush();
+	RunLoopType type = RunLoop::loopType();
+	s_logManager[(int)type].toFlush();
+	RunLoop::runInLoop(std::bind(Logger::flushLoop, type), RunLoopType::RLT_LOG);
 }
 
 void Logger::initLogger()

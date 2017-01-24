@@ -1,6 +1,7 @@
 #ifndef _LRB_LOGGER_H
 #define _LRB_LOGGER_H
 
+#include "lrbRunLoop.h"
 
 namespace lrb {
 
@@ -64,8 +65,8 @@ namespace lrb {
 	public:
 		static void logData(const void *data, size_t size);
 		static void flush();
-		static void toFlush();
 		static void initLogger();
+		static void flushLoop(RunLoopType type);
 
 //		Logger();
 //		~Logger();

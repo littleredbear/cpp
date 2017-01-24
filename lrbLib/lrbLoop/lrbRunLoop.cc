@@ -5,12 +5,13 @@
 #include "lrbTask.h"
 #include "lrbBase.h"
 #include "lrbLogger.h"
+#include "lrbLoopPoller.h"
 
 
 using namespace lrb;
 
 namespace {
-	TaskManager s_taskManager[(int)RunLoopType::RLT_TOP-2][(int)RunLoopType::RLT_TOP];
+	TaskManager s_taskManager[(int)RunLoopType::RLT_TOP-1][(int)RunLoopType::RLT_TOP];
 	LoopPoller s_poller[(int)RunLoopType::RLT_TOP];
 	TimerManager s_timerManager[(int)RunLoopType::RLT_TOP-1];
 
@@ -22,12 +23,11 @@ void RunLoop::initRunLoop(const std::function<void()> &func)
 {
 	assert(func);
 
-	for (int i = 1; i < (int)RunLoopType::RLT_TOP-2; ++i) 
+	for (int i = 1; i < (int)RunLoopType::RLT_TOP-1; ++i) 
 	{
 		startNewLoop((RunLoopType)i);
 	}
 
-	startLogLoop();
 	startTimerLoop();
 	
 	startLogicLoop(func);
@@ -63,7 +63,8 @@ void RunLoop::runInLoop(const std::function<void()> &func, RunLoopType type, con
 		s_poller[(int)RunLoopType::RLT_TIMER].notify();
 	} else {
 		s_taskManager[(int)type][(int)s_loopType].addTask(func);
-		notifyLoop(type);
+		if (s_loopType != type)
+			s_poller[(int)type].notify();
 	}
 }
 
@@ -78,6 +79,9 @@ const char *RunLoop::loopName()
 	{
 	case RunLoopType::RLT_LOGIC:
 		return "LogicLoop";
+	
+	case RunLoopType::RLT_NET:
+		return "NetLoop";
 
 	case RunLoopType::RLT_LOG:
 		return "LogLoop";
@@ -90,17 +94,17 @@ const char *RunLoop::loopName()
 	}
 }
 
-void RunLoop::notifyLoop(RunLoopType type)
-{
-	if (s_loopType == type)
-		return;
+//void RunLoop::notifyLoop(RunLoopType type)
+//{
+//	if (s_loopType == type)
+//		return;
 	
-	s_poller[(int)type].notify();
-}
+//	s_poller[(int)type].notify();
+//}
 
-void RunLoop::addPollFd(int fd, short events, const std::function<void(int, short)> &func)
+int RunLoop::addPollFd(int fd, short events, const std::function<void(int, short)> &func)
 {
-	s_poller[(int)s_loopType].addPollFd(fd, events, func);
+	return s_poller[(int)s_loopType].addPollFd(fd, events, func);
 }
 
 bool RunLoop::execTask()
@@ -159,17 +163,17 @@ void RunLoop::timerFunc()
 	} while(1);
 }
 
-void RunLoop::logFunc()
-{
-	s_loopType = RunLoopType::RLT_LOG;
+//void RunLoop::logFunc()
+//{
+//	s_loopType = RunLoopType::RLT_LOG;
 	
-	do 
-	{
-		Logger::flush();
-		s_poller[(int)s_loopType].poll();
+//	do 
+//	{
+//		Logger::flush();
+//		s_poller[(int)s_loopType].poll();
 
-	}while(1);
-}
+//	}while(1);
+//}
 
 void RunLoop::loopFunc(RunLoopType type)
 {
@@ -199,11 +203,11 @@ void RunLoop::startTimerLoop()
 	th.detach();
 }
 
-void RunLoop::startLogLoop()
-{
-	std::thread th(std::bind(RunLoop::logFunc));
-	th.detach();
-}
+//void RunLoop::startLogLoop()
+//{
+//	std::thread th(std::bind(RunLoop::logFunc));
+//	th.detach();
+//}
 
 void RunLoop::startLogicLoop(const std::function<void()> &func)
 {

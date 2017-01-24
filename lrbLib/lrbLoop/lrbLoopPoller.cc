@@ -51,8 +51,8 @@ void LoopPoller::pollFunc(int fd, short events)
 	read(fd, &one, sizeof(one));
 }
 
-void LoopPoller::addPollFd(int fd, short events, const std::function<void(int, short)> &func)
+int LoopPoller::addPollFd(int fd, short events, const std::function<void(int, short)> &func)
 {
-	m_poller.addPollFd(fd, events, func);
+	return m_poller.addPollFd(fd, events, func);
 }
 

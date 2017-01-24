@@ -1,14 +1,21 @@
 #include "lrbNetWork.h"
 #include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 
 using namespace lrb;
 
+namespace {
 
-//-------------------------------Net Task-----------------------------
+	NetManager s_netManager[RunLoopType::RLT_TOP-3];
+}
 
-NetTask::NetTask():
-m_fd(-1),
+//-------------------------------Net Data-----------------------------
+
+NetData::NetData():
+m_uuid(0),
+m_verify(0),
 m_data(NULL),
 m_size(0),
 m_next(NULL)
@@ -16,54 +23,78 @@ m_next(NULL)
 
 }
 
-NetTask::~NetTask()
+NetData::~NetData()
 {
 
 }
 
-bool NetTask::setNetTask(int fd, const void *data, size_t size)
+bool NetData::setNetData(int uuid, int verify, void *data, size_t size)
 {
 	if (m_size != 0 ||
-		data == NULL ||
-		size <= 0)	
+	    data == NULL ||
+	    size <= 0)	
 		return false;
 
-	m_fd = fd;
+	m_uuid = uuid;
+	m_verify = verify;
 	m_data = data;
 	m_size = size;
 		
 	return true;
 }
 
-bool NetTask::execNetTask()
+bool NetData::writeNetData(int &off)
 {
 	if (m_size == 0 || m_data == NULL)
 		return false;
 
-	int ret = write(fd, m_data, m_size);
+	int left = m_size - off;
+
+	int ret = write(1, m_data + off, left);
 	if (ret == -1)
 	{
 		if (errno == EAGAIN ||
-			errno == EINTR)
+		    errno == EINTR)
 			return false;
+
+	} else if (ret < left)
+	{
+		off += ret;
+		return false;
 	}
 
 	free(m_data);
+	off = 0;
 	m_size = 0;
 
 	return true;
 }
 
-void NetTask::bindNextTask(NetTask *next)
+bool NetData::empty()
+{
+	return m_size == 0;
+}
+
+void NetData::bindNextData(NetData *next)
 {
 	m_next = next;
 }
 
-NetTask *NetTask::nextTask()
+NetData *NetData::nextData()
 {
 	if (m_next != NULL)
 		return m_next;
 	
 	return this + 1;
 }
+
+//---------------------------------------------Net Manager-------------------------------
+
+
+
+
+
+
+
+
 

@@ -10,8 +10,8 @@ namespace lrb {
 		RLT_LOGIC = 0,		//必须放在开始
 //		RLT_RENDER,
 
-		RLT_NET,		
-		RLT_LOG,		// 必须放在倒数2位
+		RLT_NET,		// 必须倒数3位
+		RLT_LOG,		// 必须倒数2位
 		RLT_TIMER,		// 必须放在最后
 		RLT_TOP
 	};
@@ -19,12 +19,12 @@ namespace lrb {
 	class RunLoop {
 	public:
 		static void initRunLoop(const std::function<void()> &func);
-		// type can't be RLT_TIMER
+		// 不要在Net, Log 和 Timer 执行回调。因为有特定的调用接口
 		static void runInLoop(const std::function<void()> &func, RunLoopType type, const timeval *tv = NULL);
 		static RunLoopType loopType();
 		static const char *loopName();
-		static void notifyLoop(RunLoopType type);
-		static void addPollFd(int fd, short events, const std::function<void(int, short)> &func);
+//		static void notifyLoop(RunLoopType type);
+		static int addPollFd(int fd, short events, const std::function<void(int, short)> &func);
 
 //		RunLoop();
 //		RunLoop(RunLoopType type);
@@ -35,11 +35,11 @@ namespace lrb {
 		static bool execTask();
 	
 		static void timerFunc();
-		static void logFunc();
+//		static void logFunc();
 		static void loopFunc(RunLoopType type);
 		static void startNewLoop(RunLoopType type);
 		static void startTimerLoop();
-		static void startLogLoop();
+//		static void startLogLoop();
 		static void startLogicLoop(const std::function<void()> &func);
 	
 //		RunLoopType m_loopType;

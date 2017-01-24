@@ -15,7 +15,7 @@ namespace lrb {
 		void poll(int timeout = -1);
 		void notify();
 		void pollFunc(int fd, short events);
-		void addPollFd(int fd, short events, const std::function<void(int, short)> &func);
+		int addPollFd(int fd, short events, const std::function<void(int, short)> &func);
 
 	private:
 		int m_ntyFd;
