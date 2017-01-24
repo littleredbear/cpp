@@ -8,7 +8,8 @@ using namespace lrb;
 
 namespace {
 
-	NetManager s_netManager[RunLoopType::RLT_TOP-3];
+	DataManager s_dataManager[RunLoopType::RLT_TOP-3];
+	LinkData s_linkData[s_makLinkNum];
 }
 
 //-------------------------------Net Data-----------------------------
@@ -88,11 +89,52 @@ NetData *NetData::nextData()
 	return this + 1;
 }
 
-//---------------------------------------------Net Manager-------------------------------
+//---------------------------------------------Data Manager-------------------------------
 
 
 
 
+//--------------------------------------------Net Task---------------------------------
+
+
+//---------------------------------------------Net Link---------------------------------
+
+
+//----------------------------------------------Link Data---------------------------------
+
+LinkData::LinkData():
+m_link(NULL),
+m_verify(0)
+{
+
+}
+
+LinkData::~LinkData()
+{
+
+}
+
+void LinkData::setNetLink(NetLink *link)
+{
+	m_link = link;
+}
+
+NetLink *LinkData::getNetLink()
+{
+	return m_link;
+}
+
+void LinkData::nextVerify()
+{
+	++m_verify;
+}
+
+int LinkData::getVerify()
+{
+	return m_verify;
+}
+
+//----------------------------------------------Link Manager------------------------------
 
 
 

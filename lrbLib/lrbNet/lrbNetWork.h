@@ -5,6 +5,8 @@
 
 namespace lrb {
 
+namespace NetWork {
+
 //-------------------------------Net Data----------------------------------
 	
 	class NetData {
@@ -27,9 +29,9 @@ namespace lrb {
 		NetData *m_next;
 	};
 
-//---------------------------------------Net Manager------------------------------
+//---------------------------------------Data Manager------------------------------
 
-	class NetManager {
+	class DataManager {
 	public:
 		const static int s_defaultNum = 128;
 	
@@ -67,26 +69,43 @@ namespace lrb {
 
 	};
 
+//-----------------------------------Link Data----------------------------------
+
+	class LinkData {
+	public:
+		LinkData();
+		~LinkData();
+
+		void setNetLink(NetLink *link);
+		NetLink *getNetLink();
+		
+		void nextVerify();
+		int getVerify();
+	
+	private:
+		NetLink *m_link;
+		int m_verify;
+	};
+
+//--------------------------------Link Manager------------------------------------
+
 	class LinkManager {
 	public:
+		const static int s_maxLinkNum = (1 << 16);
+
 		NetLink *getNetLink(int uuid, int verify);
 
 	private:
 		
-
 	};
 
 
-	class NetWork {
-	public:
-		static void connectServer(const char *addr, short port);
-		static void startServer(const char *addr, short port);
-		static void disConnect(int uuid);
-		static void sendData(int uuid, const char *data, size_t size);
+	void connectServer(const char *addr, short port);
+	void startServer(const char *addr, short port);
+	void disConnect(int uuid);
+	void sendData(int uuid, int verify, const char *data, size_t size);
 
-	private:
-
-	};
+}
 
 }
 
