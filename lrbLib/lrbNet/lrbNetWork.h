@@ -1,7 +1,7 @@
 #ifndef _LRB_NET_WORK_H
 #define _LRB_NET_WORK_H
 
-#include "lrbPoller.h"
+#include <string>
 
 namespace lrb {
 
@@ -35,8 +35,8 @@ namespace NetWork {
 	public:
 		const static int s_defaultNum = 128;
 	
-		NetManager();
-		~NetManager();
+		DataManager();
+		~DataManager();
 		void addNetData(int uuid, void *data, size_t size);
 		
 	private:
@@ -48,6 +48,15 @@ namespace NetWork {
 //-------------------------------------Net Task-------------------------------
 
 	class NetTask {
+	public:
+		NetTask();
+		~NetTask();
+		
+		void setNetData(NetData *data);
+		NetData *getNetData();
+		void taskDone();
+		void bindNextTask(NetTask *next);
+		NetTask *nextTask();
 
 	private:
 		NetData *m_data;
@@ -58,52 +67,38 @@ namespace NetWork {
 
 	class NetLink {
 	public:
-		void disconnect();
+		const static int s_defaultTask = 64;
+
+		NetLink();
+		~NetLink();
+
+		void nextVerify();
+		int getVerify();
+		void disConnect();
+		void connectServer(const std::string &host, const std::string &service);
+		void startService(const std::string &service);
 		
 	private:
-		NetTask *m_task;
+		NetTask m_tasks[s_defaultTask];
+		NetTask *m_addTask;
+		NetTask *m_execTask;
+
 		int m_off;
 		int m_fd;
 		int m_verify;
 		int m_handler;
-
-	};
-
-//-----------------------------------Link Data----------------------------------
-
-	class LinkData {
-	public:
-		LinkData();
-		~LinkData();
-
-		void setNetLink(NetLink *link);
-		NetLink *getNetLink();
-		
-		void nextVerify();
-		int getVerify();
-	
-	private:
-		NetLink *m_link;
-		int m_verify;
+		std::string m_host;
+		std::string m_service;
 	};
 
 //--------------------------------Link Manager------------------------------------
 
-	class LinkManager {
-	public:
-		const static int s_maxLinkNum = (1 << 16);
 
-		NetLink *getNetLink(int uuid, int verify);
-
-	private:
-		
-	};
-
-
-	void connectServer(const char *addr, short port);
-	void startServer(const char *addr, short port);
+	void connectServer(const std::string &hostname, const std::string &service, int uuid);
+	void startService(const std::string &service);
 	void disConnect(int uuid);
-	void sendData(int uuid, int verify, const char *data, size_t size);
+	void sendData(int uuid, int verify, void *data, size_t size);
+	void sortNetData();
 
 }
 

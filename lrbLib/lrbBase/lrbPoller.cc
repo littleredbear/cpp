@@ -88,7 +88,7 @@ void Poller::removePollFd(int handler)
 	m_rhandlers.push_back(handler);
 }
 
-void Poller::updatePollFd(int handler, short events)
+void Poller::updatePollFd(int handler, short events, const std::function<void(int, short)> &func)
 {
 	assert(handler <= m_handlers.size());
 	
@@ -98,6 +98,9 @@ void Poller::updatePollFd(int handler, short events)
 	
 	m_pfds[idx].events = events;
 	m_pfds[idx].revents = 0;
+	
+	if (func)
+		m_funcs[idx] = func;
 }
 
 

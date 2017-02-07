@@ -15,7 +15,7 @@ namespace lrb {
 		void poll(int timeout);
 		int addPollFd(int fd, short events, const std::function<void(int, short)> &func);
 		void removePollFd(int handler);
-		void updatePollFd(int handler, short events);
+		void updatePollFd(int handler, short events, const std::function<void(int, short)> &func);
 
 	private:
 		std::vector<pollfd> m_pfds;

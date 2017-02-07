@@ -1,15 +1,20 @@
 #include "lrbNetWork.h"
+#include "lrbRunLoop.h"
+#include "lrbNetData.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <netdb.h>
 
 
-using namespace lrb;
+using namespace lrb::NetData;
+using namespace lrb::NetWork;
 
 namespace {
+	const static int s_maxLinkNum = (1 << 16);
 
 	DataManager s_dataManager[RunLoopType::RLT_TOP-3];
-	LinkData s_linkData[s_makLinkNum];
+	NetLink s_links[s_maxLinkNum];
 }
 
 //-------------------------------Net Data-----------------------------
@@ -91,7 +96,20 @@ NetData *NetData::nextData()
 
 //---------------------------------------------Data Manager-------------------------------
 
+DataManager::DataManager()
+{
 
+}
+
+DataManager::~DataManager()
+{
+
+}
+
+void DataManager::addNetData(int uuid, void *data, size_t size)
+{
+
+}
 
 
 //--------------------------------------------Net Task---------------------------------
@@ -99,43 +117,74 @@ NetData *NetData::nextData()
 
 //---------------------------------------------Net Link---------------------------------
 
-
-//----------------------------------------------Link Data---------------------------------
-
-LinkData::LinkData():
-m_link(NULL),
-m_verify(0)
+NetLink::NetLink():
+m_off(0),
+m_fd(0),
+m_verify(0),
+m_handler(0)
 {
 
 }
 
-LinkData::~LinkData()
+NetLink::~NetLink()
 {
 
 }
 
-void LinkData::setNetLink(NetLink *link)
-{
-	m_link = link;
-}
-
-NetLink *LinkData::getNetLink()
-{
-	return m_link;
-}
-
-void LinkData::nextVerify()
+void NetLink::nextVerify()
 {
 	++m_verify;
 }
 
-int LinkData::getVerify()
+int NetLink::getVerify()
 {
 	return m_verify;
 }
 
+void NetLink::disConnect()
+{
+
+}
+
+void NetLink::connectServer(const std::string &host, const std::string &service)
+{
+
+}
+
+void NetLink::startService(const std::string &service)
+{
+
+}
+
+
 //----------------------------------------------Link Manager------------------------------
 
+
+void connectServer(const std::string &hostname, const std::string &service, int uuid)
+{
+	RunLoop::runInLoop(std::bind(&NetLink::connectServer, &s_links[uuid], hostname, service), RunLoopType::RLT_NET);
+}
+
+void startService(const std::string &service)
+{
+
+}
+
+void disConnect(int uuid)
+{
+	RunLoop::runInLoop(std::bind(&NetLink::disConnect, &s_links[uuid]), RunLoopType::RLT_NET);
+}
+
+void sendData(int uuid, int verify, void *data, size_t size)
+{
+	s_dataManager[(int)RunLoop::loopType()].addNetData(uuid, data, size);
+	RunLoop::runInLoop(std::bind(sortNetData), RunLoopType::RLT_NET);
+}
+
+void sortNetData()
+{
+
+}
 
 
 
