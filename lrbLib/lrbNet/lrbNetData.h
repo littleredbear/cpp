@@ -2,6 +2,10 @@
 #define _LRB_NET_DATA_H
 
 #include <string>
+#include <functional>
+
+
+//LRB_APPTYPE 0.兼容,1.服务器,其他.客户端
 
 namespace lrb {
 
@@ -21,13 +25,16 @@ namespace NetData {
 
 	};
 
-	struct ResVerify {
+	struct AckVerifyData {
 
+		int uuid;
 		int verify;
 	};
 
-	int archiveData(const void *src, int uuid, void **res); //res需要自行释放
-	void parseData(void *src);
+	int packData(const void *src, void **res); //res需要自行释放
+	void unpackData(void *src);
+	void bindReqFunc(int uuid, const std::function<void()> &func);
+	void bindAckFunc(int uuid, const std::function<void()> &func);
 
 }
 

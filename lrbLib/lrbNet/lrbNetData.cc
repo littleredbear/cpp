@@ -2,24 +2,61 @@
 #include <stdlib.h>
 
 
-using namespace lrb::NetData;
+#if LRB_APPTYPE == 0
 
-ReqVerifyData g_VerifyData;
 
-const static void *s_ptrs[] = {&g_VerifyData,};
+#elif LRB_APPTYPE == 1
+
+
+#else
+
+
+#endif
+
+ReqVerifyData g_ReqVerifyData;
+
+const static void *s_ptrs[] = {&g_ReqVerifyData,};
+
+static std::function<void()> s_reqFuncs[1];
+
+#else
+
+AckVerifyData g_AckVerifyData;
+
+const static void *s_ptrs[] = {&g_AckVerifyData,};
+
+#endif
 
 const static short s_confs[][5] = {
+	{0,0,4,0,0,},
 	{0,0,4,0,0,},
 };
 
 
-int archiveData(const void *src, int uuid, void **res)
+namespace lrb {
+
+namespace NetData {
+
+int packData(const void *src, void **res)
 {
 	
 	return -1;
 }
 
-void parseData(void *src)
+void unpackData(void *src)
 {
+	int uuid;
+	int idx = uuid >> 1;
+	
+}
+
+#if LRB_APPTYPE == 0
+void bindReqFunc(int uuid, const std::function<void()> &func)
+{
+	s_reqFuncs[uuid >> 1] = func;
+}
+#endif	
+
+}
 
 }
