@@ -31,9 +31,10 @@ namespace lrb {
 		void bindNextNode(TaskNode *next);
 		
 	private:
+		std::function<void()> m_func;
+
 		TaskState m_state;
 		TaskNode *m_next;
-		std::function<void()> m_func;
 	};
 
 //----------------------------Task Manager-------------------
@@ -49,11 +50,12 @@ namespace lrb {
 		bool execTask();
 
 	private:
+		std::vector<void *> m_ptrs;
+		TaskNode m_tasks[s_defaultTaskNum];
+
 		TaskNode *m_addTask;
 		TaskNode *m_execTask;
 		uint32_t m_size;
-		std::vector<void *> m_ptrs;
-		TaskNode m_tasks[s_defaultTaskNum];
 		
 	};
 
@@ -75,10 +77,11 @@ namespace lrb {
 		TimerTask *nextTask();
 		
 	private:
+		std::function<void()> m_func;
+		timeval m_tv;
+
 		TaskState m_state;
 		TimerTask *m_next;
-		timeval m_tv;
-		std::function<void()> m_func;
 	};
 
 //-----------------------------Timer Manager------------------------
@@ -95,12 +98,13 @@ namespace lrb {
 		const timeval *execTask(RunLoopType type, const timeval *tv);
 
 	private:
-		TimerTask *m_addTask;
-		TimerTask *m_execTask;
-		uint32_t m_size;
 		std::vector<void *> m_ptrs;
 		std::multimap<timeval, std::function<void()> > m_tasks;
 		TimerTask m_atasks[s_defaultNum];
+
+		TimerTask *m_addTask;
+		TimerTask *m_execTask;
+		uint32_t m_size;
 	};
 
 }

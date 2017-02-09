@@ -4,7 +4,7 @@
 
 using namespace lrb::NetData;
 
-VerifyData g_VerifyData;
+ReqVerifyData g_VerifyData;
 
 const static void *s_ptrs[] = {&g_VerifyData,};
 

@@ -86,8 +86,8 @@ void TaskManager::addTask(const std::function<void()> &func)
 			return;
 		}
 
-		m_addTask->bindNextNode(ptr);
 		ptr[m_size-1].bindNextNode(m_addTask->nextNode());
+		m_addTask->bindNextNode(ptr);
 		ptr->setTaskFunc(func);
 		m_addTask = ptr;
 
@@ -202,8 +202,8 @@ void TimerManager::addTask(const std::function<void()> &func, const timeval *tv)
 			return;
 		}
 
-		m_addTask->bindNextTask(ptr);
 		ptr[m_size-1].bindNextTask(m_addTask->nextTask());
+		m_addTask->bindNextTask(ptr);
 		ptr->setTimerTask(func, tv);
 		m_addTask = ptr;
 

@@ -17,10 +17,11 @@ namespace lrb {
 		void pollFunc(int fd, short events);
 		int addPollFd(int fd, short events, const std::function<void(int, short)> &func);
 		void updatePollFd(int handler, short events, const std::function<void(int, short)> &func);
+		void removePollFd(int handler);
 
 	private:
-		int m_ntyFd;
 		Poller m_poller;
+		int m_ntyFd;
 	};
 
 }

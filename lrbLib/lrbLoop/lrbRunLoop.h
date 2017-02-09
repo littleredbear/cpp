@@ -25,6 +25,8 @@ namespace lrb {
 		static const char *loopName();
 //		static void notifyLoop(RunLoopType type);
 		static int addPollFd(int fd, short events, const std::function<void(int, short)> &func);
+		static void updatePollFd(int handler, short events, const std::function<void(int, short)> &func);
+		static void removePollFd(int handler);
 
 //		RunLoop();
 //		RunLoop(RunLoopType type);

@@ -2,10 +2,17 @@
 #define _LRB_NET_WORK_H
 
 #include <string>
+#include <vector>
 
 namespace lrb {
 
 namespace NetWork {
+
+	enum LinkState {
+		LS_CLOSED = 0,
+		LS_TOLINK,
+		LS_LINKED
+	};
 
 //-------------------------------Net Data----------------------------------
 	
@@ -14,91 +21,77 @@ namespace NetWork {
 		NetData();
 		~NetData();
 
-		bool setNetData(int uuid, int verify, void *data, size_t size);
-		bool writeNetData(int &off);
+		bool setNetData(int verify, void *data, size_t size);
+		bool writeNetData(int sockfd, int verify, int &off);
 		bool empty();
 
 		void bindNextData(NetData *next);
 		NetData *nextData();
 
 	private:
-		int m_uuid;
 		int m_verify;
 		void *m_data;
 		size_t m_size;
 		NetData *m_next;
 	};
 
-//---------------------------------------Data Manager------------------------------
-
-	class DataManager {
-	public:
-		const static int s_defaultNum = 128;
-	
-		DataManager();
-		~DataManager();
-		void addNetData(int uuid, void *data, size_t size);
-		
-	private:
-		NetData m_datas[s_defaultNum];
-		NetData *m_addData;
-		NetData *m_getData;
-	};
-
-//-------------------------------------Net Task-------------------------------
-
-	class NetTask {
-	public:
-		NetTask();
-		~NetTask();
-		
-		void setNetData(NetData *data);
-		NetData *getNetData();
-		void taskDone();
-		void bindNextTask(NetTask *next);
-		NetTask *nextTask();
-
-	private:
-		NetData *m_data;
-		NetTask *m_next;
-	};
 
 //--------------------------------------Net Link---------------------------------
 
 	class NetLink {
 	public:
-		const static int s_defaultTask = 64;
+		const static int s_defaultNum = 128;
 
 		NetLink();
 		~NetLink();
 
-		void nextVerify();
-		int getVerify();
+		void addNetData(int verify, void *data, size_t size);
+
 		void disConnect();
 		void connectServer(const std::string &host, const std::string &service);
-		void startService(const std::string &service);
+		void acceptLink(int sockfd, int handler);
 		
 	private:
-		NetTask m_tasks[s_defaultTask];
-		NetTask *m_addTask;
-		NetTask *m_execTask;
+		void sendNetData();
+		void readNetData();
+		void linkFunc(int sockfd, short events);
+		
+		std::string m_host;
+		std::string m_service;
+		std::vector<void *> m_ptrs;
 
+		NetData m_datas[s_defaultNum];
+		NetData *m_addData;
+		NetData *m_execData;
+		int m_size;
+
+		LinkState m_state;
 		int m_off;
 		int m_fd;
 		int m_verify;
 		int m_handler;
-		std::string m_host;
-		std::string m_service;
+
+		short m_events;
+
+	};
+
+//---------------------------------Link Acceptor-------------------------------
+
+	class LinkAcceptor {
+	public:
+		void startService(short service);
+
+	private:
+		void acceptFunc(int fd, short events);
+		void verifyFunc(int sockfd, short events, int *handler);
 	};
 
 //--------------------------------Link Manager------------------------------------
 
-
 	void connectServer(const std::string &hostname, const std::string &service, int uuid);
-	void startService(const std::string &service);
+	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, int verify, void *data, size_t size);
-	void sortNetData();
 
 }
 

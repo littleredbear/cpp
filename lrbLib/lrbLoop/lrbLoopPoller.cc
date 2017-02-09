@@ -59,4 +59,16 @@ int LoopPoller::addPollFd(int fd, short events, const std::function<void(int, sh
 void LoopPoller::updatePollFd(int handler, short events, const std::function<void(int, short)> &func)
 {
 	m_poller.updatePollFd(handler, events, func);
+}
+
+void LoopPoller::removePollFd(int handler)
+{
+	m_poller.removePollFd(handler);
+}
+
+
+
+
+
+
 

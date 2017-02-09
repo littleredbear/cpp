@@ -107,6 +107,16 @@ int RunLoop::addPollFd(int fd, short events, const std::function<void(int, short
 	return s_poller[(int)s_loopType].addPollFd(fd, events, func);
 }
 
+void RunLoop::updatePollFd(int handler, short events, const std::function<void(int, short)> &func)
+{
+	s_poller[(int)s_loopType].updatePollFd(handler, events, func);
+}
+
+void RunLoop::removePollFd(int handler)
+{
+	s_poller[(int)s_loopType].removePollFd(handler);
+}
+
 bool RunLoop::execTask()
 {
 	bool ret = false;
