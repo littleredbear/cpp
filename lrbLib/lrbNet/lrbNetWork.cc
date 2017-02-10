@@ -1,6 +1,6 @@
 #include "lrbNetWork.h"
 #include "lrbRunLoop.h"
-#include "lrbDataCenter.h"
+#include "lrbNetData.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -11,9 +11,7 @@
 #include <poll.h>
 
 
-using namespace lrb;
 using namespace lrb::NetWork;
-using namespace lrb::DataCenter;
 
 
 namespace {
@@ -250,7 +248,7 @@ void NetLink::readNetData()
 		int ret = read(m_fd, buff, s_netBuffSize);
 		if (ret > 0)
 		{
-			RunLoop::runInLoop(std::bind(parseNetData, buff, ret), RunLoopType::RLT_LOGIC);
+			RunLoop::runInLoop(std::bind(lrb::NetData::parseNetData, buff, ret), RunLoopType::RLT_LOGIC);
 		} else 
 		{
 			free(buff);

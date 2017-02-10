@@ -5,7 +5,7 @@
 #include <functional>
 
 
-//LRB_APPTYPE 0.兼容,1.服务器,其他.客户端
+#define LRB_APPSERVER
 
 namespace lrb {
 
@@ -17,7 +17,6 @@ namespace NetData {
 //8
 
 //4
-		int uuid;
 		int verify;
 //2
 
@@ -27,14 +26,31 @@ namespace NetData {
 
 	struct AckVerifyData {
 
-		int uuid;
 		int verify;
 	};
 
-	int packData(const void *src, void **res); //res需要自行释放
-	void unpackData(void *src);
-	void bindReqFunc(int uuid, const std::function<void()> &func);
-	void bindAckFunc(int uuid, const std::function<void()> &func);
+
+	class DataParser {
+	public:
+		DataParser();
+		~DataParser();
+	
+		void parseNetData(char *data, int size);	
+
+	private:
+		void parseNetFrame(char *frame, int len);
+			
+		char *m_dataCache;
+		int m_cacheLen;
+		int m_frameLen;
+
+	};
+
+	int packData(const char *src, int uuid, void **res); //res需要自行释放
+	int unpackData(const char *src, int size);
+	void bindReqFunc(int uuid, const std::function<void(int, int)> &func);
+	void bindAckFunc(int verify, const std::function<void()> &func);
+	void parseNetData(char *data, int size);
 
 }
 
