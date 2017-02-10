@@ -52,43 +52,24 @@ DataParser::~DataParser()
 
 void DataParser::parseNetData(char *data, int size)
 {
-	char *ptr = data;
 	if (m_dataCache == NULL)
 	{
-		int frameLen;
-		int total = size;
-		do {
-			memcpy(&frameLen, ptr, sizeof(int));
-			ptr += sizeof(int);
-			total -= sizeof(int);
-
-			int leftLen = total - sizeof(int);
-			if (frameLen > leftLen)
-			{
-				m_dataCache = (char *)calloc(frameLen, sizeof(char));
-				if (m_dataCache)
-				{
-					memcpy(m_dataCache, ptr, leftLen);
-					m_frameLen = frameLen;
-					m_cacheLen = leftLen;
-				}
-				break;
-			} else
-			{
-				parseNetFrame(ptr, frameLen);
-				ptr += frameLen;
-				total -= frameLen;
-			}
-
-		}while(1);
+		parseFirstData(data, size);
 	} else 
 	{
-		if (m_frameLen > size + m_cacheLen)
+		int needLen = m_frameLen - m_cacheLen;
+		if (needLen > size)
 		{
-			memcpy(m_dataCache, ptr, size);
+			memcpy(m_dataCache + m_cacheLen, data, size);
 			m_cacheLen += size;
 		} else
 		{
+			memcpy(m_dataCache + m_cacheLen, data, needLen);
+			parseNetFrame(m_dataCache, m_frameLen);
+			free(m_dataCache);
+			m_dataCache = NULL;
+		
+			parseFirstData(data + needLen, size-needLen);
 
 		}
 	}
@@ -96,9 +77,39 @@ void DataParser::parseNetData(char *data, int size)
 	free(data);
 }
 
+void DataParser::parseFirstData(char *data, int size)
+{
+	int frameLen;
+	while(size > 0) 
+	{
+		memcpy(&frameLen, data, sizeof(int));
+		data += sizeof(int);
+		size -= sizeof(int);
+
+		int leftLen = size - sizeof(int);
+		if (frameLen > leftLen)
+		{
+			m_dataCache = (char *)calloc(frameLen, sizeof(char));
+			if (m_dataCache)
+			{
+				memcpy(m_dataCache, data, leftLen);
+				m_frameLen = frameLen;
+				m_cacheLen = leftLen;
+			}
+			break;
+		} else
+		{
+			parseNetFrame(data, frameLen);
+			data += frameLen;
+			size -= frameLen;
+		}
+	}
+
+}
+
 void DataParser::parseNetFrame(char *frame, int len)
 {
-
+	
 }
 
 

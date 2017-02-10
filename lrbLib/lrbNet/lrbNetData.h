@@ -38,6 +38,7 @@ namespace NetData {
 		void parseNetData(char *data, int size);	
 
 	private:
+		void parseFirstData(char *data, int size);
 		void parseNetFrame(char *frame, int len);
 			
 		char *m_dataCache;
