@@ -1,6 +1,5 @@
 #include "lrbNetWork.h"
 #include "lrbRunLoop.h"
-#include "lrbNetData.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -248,7 +247,7 @@ void NetLink::readNetData()
 		int ret = read(m_fd, buff, s_netBuffSize);
 		if (ret > 0)
 		{
-			RunLoop::runInLoop(std::bind(lrb::NetData::parseNetData, buff, ret), RunLoopType::RLT_LOGIC);
+			RunLoop::runInLoop(std::bind(&lrb::NetData::DataParser::parseNetData, &m_parser, buff, ret, m_verify), RunLoopType::RLT_LOGIC);
 		} else 
 		{
 			free(buff);

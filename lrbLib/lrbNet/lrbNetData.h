@@ -36,7 +36,8 @@ namespace NetData {
 		DataPacker();
 		~DataPacker();
 
-		void packData(void *data, int size, bool verify);
+		void packData(void *data, int size, bool verify = false);
+		void setDoneValue(int val, int uuid, int verify);
 
 		void bindLastPacker(DataPacker *packer);
 		void bindNextPacker(DataPacker *packer);
@@ -45,11 +46,16 @@ namespace NetData {
 		DataPacker *nextPacker();
 
 	private:
+		void sendData();
+		void reusePacker();
+
 		std::vector<void *> m_datas;
 		std::vector<int> m_lens;
 
 		int m_doneVal;
 		int m_curVal;
+		int m_uuid;
+		int m_verify;
 
 		DataPacker *m_last;
 		DataPacker *m_next;
@@ -100,7 +106,6 @@ namespace NetData {
 	int unpackData(const char *src, int size);
 	void bindReqFunc(int uuid, const std::function<void(DataPacker *)> &func);
 	void bindAckFunc(int verify, const std::function<void()> &func);
-	void parseNetData(char *data, int size);
 
 }
 

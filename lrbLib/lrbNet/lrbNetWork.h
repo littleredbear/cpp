@@ -1,6 +1,7 @@
 #ifndef _LRB_NET_WORK_H
 #define _LRB_NET_WORK_H
 
+#include "lrbNetData.h"
 #include <string>
 #include <vector>
 
@@ -56,6 +57,7 @@ namespace NetWork {
 		void readNetData();
 		void linkFunc(int sockfd, short events);
 		
+		lrb::NetData::DataParser m_parser;
 		std::string m_host;
 		std::string m_service;
 		std::vector<void *> m_ptrs;
