@@ -241,7 +241,7 @@ void NetLink::sendNetData()
 void NetLink::readNetData()
 {
 	do {
-		void *buff = calloc(s_netBuffSize, sizeof(char));
+		char *buff = (char *)calloc(s_netBuffSize, sizeof(char));
 		if (buff == NULL)
 			return;
 		

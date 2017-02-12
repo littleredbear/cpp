@@ -4,7 +4,8 @@
 #include <algorithm>
 
 
-namespace {
+using namespace lrb::NetData;
+
 
 #ifdef LRB_APPSERVER
 
@@ -12,7 +13,7 @@ ReqVerifyData g_ReqVerifyData;
 
 static void *s_ptrs[] = {&g_ReqVerifyData,};
 
-static std::function<void(int, int)> s_reqFuncs[1];
+static std::function<void(DataPacker *)> s_reqFuncs[1];
 
 #else
 
@@ -24,18 +25,122 @@ static std::unordered_map<int, std::function<void()> > s_ackFuncs;
 
 #endif
 
-
 const static short s_confs[][5] = {
 	{0,0,4,0,0,},
 	{0,0,4,0,0,},
 };
 
+static DataCenter s_center;
 static DataParser s_parser;
+
+//-----------------------------------------Data Packer--------------------------------------
+
+DataPacker::DataPacker():
+m_doneVal(0),
+m_curVal(0),
+m_last(NULL),
+m_next(NULL)
+{
 
 }
 
+DataPacker::~DataPacker()
+{
 
-using namespace lrb::NetData;
+}
+
+void DataPacker::packData(void *data, int size, bool verify)
+{
+
+}
+
+void DataPacker::bindLaskPacker(DataPacker *packer)
+{
+
+}
+
+void DataPacker::bindNextPacker(DataPacker *packer)
+{
+
+}
+
+DataPacker *DataPacker::lastPacker()
+{
+	if (m_last == NULL)
+		return this - 1;
+
+	return m_last;
+}
+
+DataPacker *DataPacker::nextPacker()
+{
+	if (m_next == NULL)
+		return this + 1;
+
+	return m_next;
+}
+
+//------------------------------------------Data Center-------------------------------------
+
+DataCenter::DataCenter():
+m_size(s_defaultNum)
+{
+	m_head = m_packers;
+	m_able = m_head;
+	m_back = m_packers + m_size - 1;;
+}
+
+DataCenter::~DataCenter()
+{
+
+}
+
+DataPacker *DataCenter::getAvailablePacker()
+{
+	if (m_able == m_back)
+	{
+		DataPacker *ptr = (DataPacker *)calloc(m_size, sizeof(DataPacker));
+		if (ptr == NULL)
+			return NULL;
+
+		m_back->bindNextPacker(ptr);
+		ptr->bindLaskPacker(m_back);
+		m_back = ptr + m_size - 1;
+		m_size = m_size << 1;
+	}
+	
+	m_able = m_able->nextPacker();
+
+	return m_able->lastPacker();
+}
+
+void DataCenter::reusePacker(DataPacker *packer)
+{
+	DataPacker *next = packer->nextPacker();
+	if (next == m_able)
+	{
+		m_able = packer;
+		return;
+	}
+
+	if (packer == m_head)
+	{
+		m_head = next;
+	} else
+	{
+		DataPacker *last = packer->lastPacker();
+		last->bindNextPacker(next);
+		next->bindLastPacker(last);
+	}
+
+	packer->bindNextPacker(NULL);
+	m_back->bindNextPacker(packer);
+	packer->bindLastPacker(m_back);
+	m_back = packer;
+
+}
+
+//------------------------------------------Data Parser---------------------------------------
 
 DataParser::DataParser():
 m_dataCache(NULL),
@@ -79,9 +184,9 @@ void DataParser::parseNetData(char *data, int size)
 
 void DataParser::parseFirstData(char *data, int size)
 {
-	int frameLen;
 	while(size > 0) 
 	{
+		int frameLen;
 		memcpy(&frameLen, data, sizeof(int));
 		data += sizeof(int);
 		size -= sizeof(int);
@@ -109,7 +214,27 @@ void DataParser::parseFirstData(char *data, int size)
 
 void DataParser::parseNetFrame(char *frame, int len)
 {
-	
+#ifdef LRB_APPSREVER
+
+
+#else
+	while(len > 0)
+	{
+		int plen;
+		memcpy(&plen, frame, sizeof(int));
+		frame += sizeof(int);
+		len -= sizeof(int);
+
+		unpackData(frame, plen);
+		frame += plen;
+		len -= plen;
+	}
+
+	auto iter = s_ackFuncs.find(g_AckVerifyData.verify);
+	if (iter != s_ackFuncs.end())
+		iter->second();
+
+#endif
 }
 
 
@@ -201,7 +326,7 @@ int unpackData(const char *src, int size)
 		}
 	}
 
-	char *dst = s_ptrs[uuid >> 1];
+	char *dst = (char *)s_ptrs[uuid >> 1];
 	memset(dst + s_confs[uuid][0], 0, off-s_confs[uuid][0]);
 
 	while(size > 0)
