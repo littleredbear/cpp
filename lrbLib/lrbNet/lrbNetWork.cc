@@ -20,6 +20,7 @@ namespace {
 	NetLink s_links[s_maxLinkNum];
 
 	LinkAcceptor s_acceptor;
+	LinkManager s_manager;
 }
 
 //-------------------------------Net Data-----------------------------
@@ -109,6 +110,8 @@ m_off(0),
 m_fd(0),
 m_verify(0),
 m_handler(0),
+m_last(NULL),
+m_next(NULL),
 m_events(0)
 {
 	m_datas[s_defaultNum - 1].bindNextData(&m_datas[0]);
@@ -165,6 +168,9 @@ void NetLink::disConnect()
 	close(m_fd);
 	m_state = LinkState::LS_CLOSED;
 
+#ifdef LRB_APPSERVER
+	s_manager.reuseNetLink(this);
+#endif
 	//close callback to be continued
 }
 
@@ -212,16 +218,38 @@ void NetLink::connectServer(const std::string &host, const std::string &service)
 	// failed to be continued
 }
 
-void NetLink::acceptLink(int sockfd, int handler)
+void NetLink::acceptLink(int sockfd)
 {
 	m_fd = sockfd;
 	m_events = POLLIN;
 	++m_verify;
-	m_handler = handler;
 	m_state = LinkState::LS_LINKED;
 	
-	RunLoop::updatePollFd(handler, m_events, std::bind(&NetLink::linkFunc, this, std::placeholders::_1, std::placeholders::_2));
+	m_handler = RunLoop::addPollFd(sockfd, m_events, std::bind(&NetLink::linkFunc, this, std::placeholders::_1, std::placeholders::_2));
+}
 
+void NetLink::bindLastLink(NetLink *link)
+{
+	m_last = link;
+}
+
+void NetLink::bindNextLink(NetLink *link)
+{
+	m_next = link;
+}
+
+NetLink *NetLink::lastLink()
+{
+	if (m_last == NULL)
+		return this - 1;
+	return m_last;
+}
+
+NetLink *NetLink::nextLink()
+{
+	if (m_next == NULL)
+		return this + 1;
+	return m_next;
 }
 
 void NetLink::sendNetData()
@@ -247,7 +275,7 @@ void NetLink::readNetData()
 		int ret = read(m_fd, buff, s_netBuffSize);
 		if (ret > 0)
 		{
-			RunLoop::runInLoop(std::bind(&lrb::NetData::DataParser::parseNetData, &m_parser, buff, ret, m_verify), RunLoopType::RLT_LOGIC);
+			RunLoop::runInLoop(std::bind(&lrb::NetData::DataParser::parseNetData, &m_parser, buff, ret, m_verify, this), RunLoopType::RLT_LOGIC);
 		} else 
 		{
 			free(buff);
@@ -277,6 +305,30 @@ void NetLink::linkFunc(int sockfd, short events)
 	}
 }
 
+//----------------------------------------------Link Manager------------------------------
+
+LinkManager::LinkManager():
+m_size(s_defaultNum)
+{
+	m_head = m_links;
+	m_able = m_head;
+	m_back = m_links + m_size - 1;
+}
+
+LinkManager::~LinkManager()
+{
+
+}
+
+NetLink *LinkManager::getAvailableLink()
+{
+	return NULL;
+}
+
+void LinkManager::reuseNetLink(NetLink *link)
+{
+
+}
 
 //---------------------------------------------Link Acceptor-----------------------------
 
@@ -319,27 +371,13 @@ void LinkAcceptor::acceptFunc(int fd, short events)
 			assert(flags != -1);
 			assert(fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == 0);
 			
-			int *handler = (int *)calloc(1, sizeof(int));
-			*handler = RunLoop::addPollFd(sockfd, POLLIN, std::bind(&LinkAcceptor::verifyFunc, this, std::placeholders::_1, std::placeholders::_2, handler));
+			NetLink *link = s_manager.getAvailableLink();
+			link->acceptLink(sockfd);
 	
 		} while(1);
 	}
 }
 
-void LinkAcceptor::verifyFunc(int sockfd, short events, int *handler)
-{
-	if (events & POLLIN)
-	{
-		int uuid;
-		if (read(sockfd, &uuid, sizeof(int)) > 0)
-		{
-			s_links[uuid].acceptLink(sockfd, *handler);
-			free(handler);
-		}
-	}
-}
-
-//----------------------------------------------Link Manager------------------------------
 
 namespace lrb {
 

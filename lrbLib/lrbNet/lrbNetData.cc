@@ -1,5 +1,6 @@
 #include "lrbNetData.h"
 #include "lrbNetWork.h"
+#include "lrbRunLoop.h"
 #include <stdlib.h>
 #include <unordered_map>
 #include <algorithm>
@@ -68,9 +69,9 @@ void DataPacker::packData(void *data, int size, bool verify)
 
 }
 
-void DataPacker::setDoneValue(int val, int uuid, int verify)
+void DataPacker::setDoneValue(int val, int verify, lrb::NetWork::NetLink *link)
 {
-	m_uuid = uuid;
+	m_link = link;
 	m_verify = verify;
 
 	if (val == m_curVal)
@@ -81,7 +82,7 @@ void DataPacker::setDoneValue(int val, int uuid, int verify)
 
 void DataPacker::bindLastPacker(DataPacker *packer)
 {
-	m_last = last;
+	m_last = packer;
 }
 
 void DataPacker::bindNextPacker(DataPacker *packer)
@@ -105,14 +106,14 @@ DataPacker *DataPacker::nextPacker()
 	return m_next;
 }
 
-void DataPacker::sendData(DataPacker *last)
+void DataPacker::sendData()
 {
 	int size = 0;
 	for (auto len : m_lens)
 		size += (len + sizeof(int));
 
 	void *data = calloc(size + sizeof(int), sizeof(char));
-	void *ptr = data;
+	char *ptr = (char *)data;
 
 	memcpy(ptr, &size, sizeof(int));
 	ptr += sizeof(int);
@@ -127,7 +128,7 @@ void DataPacker::sendData(DataPacker *last)
 		ptr += len;
 	}
 
-	lrb::NetWork::sendData(m_uuid, m_verify, data, size);
+	RunLoop::runInLoop(std::bind(&lrb::NetWork::NetLink::addNetData, m_link, m_verify, data, size), RunLoopType::RLT_NET);
 	reusePacker();
 }
 
@@ -217,34 +218,41 @@ DataParser::~DataParser()
 
 }
 
-void DataParser::parseNetData(char *data, int size, int verify)
+void DataParser::parseNetData(char *data, int size, int verify, lrb::NetWork::NetLink *link)
 {
 	if (m_dataCache == NULL)
 	{
-		parseFirstData(data, size);
+		parseFirstData(data, size, verify, link);
 	} else 
 	{
-		int needLen = m_frameLen - m_cacheLen;
-		if (needLen > size)
+		if (m_verify != verify)
 		{
-			memcpy(m_dataCache + m_cacheLen, data, size);
-			m_cacheLen += size;
-		} else
-		{
-			memcpy(m_dataCache + m_cacheLen, data, needLen);
-			parseNetFrame(m_dataCache, m_frameLen);
 			free(m_dataCache);
 			m_dataCache = NULL;
-		
-			parseFirstData(data + needLen, size-needLen);
+			parseFirstData(data, size, verify, link);
+		} else
+		{
+			int needLen = m_frameLen - m_cacheLen;
+			if (needLen > size)
+			{
+				memcpy(m_dataCache + m_cacheLen, data, size);
+				m_cacheLen += size;
+			} else
+			{
+				memcpy(m_dataCache + m_cacheLen, data, needLen);
+				parseNetFrame(m_dataCache, m_frameLen, m_verify, link);
+				free(m_dataCache);
+				m_dataCache = NULL;
 
+				parseFirstData(data + needLen, size-needLen, verify, link);
+			}
 		}
 	}
 
 	free(data);
 }
 
-void DataParser::parseFirstData(char *data, int size)
+void DataParser::parseFirstData(char *data, int size, int verify, lrb::NetWork::NetLink *link)
 {
 	while(size > 0) 
 	{
@@ -262,11 +270,12 @@ void DataParser::parseFirstData(char *data, int size)
 				memcpy(m_dataCache, data, leftLen);
 				m_frameLen = frameLen;
 				m_cacheLen = leftLen;
+				m_verify = verify;
 			}
 			break;
 		} else
 		{
-			parseNetFrame(data, frameLen);
+			parseNetFrame(data, frameLen, verify, link);
 			data += frameLen;
 			size -= frameLen;
 		}
@@ -274,11 +283,26 @@ void DataParser::parseFirstData(char *data, int size)
 
 }
 
-void DataParser::parseNetFrame(char *frame, int len)
+void DataParser::parseNetFrame(char *frame, int len, int verify, lrb::NetWork::NetLink *link)
 {
-#ifdef LRB_APPSREVER
+#ifdef LRB_APPSERVER
+	DataPacker *packer = s_center.getAvailablePacker();
+	int val = 0;
+	while(len > 0)
+	{
+		int plen;
+		memcpy(&plen, frame, sizeof(int));
+		frame += sizeof(int);
+		len -= sizeof(int);
 
+		int uuid = unpackData(frame, plen);
+		frame += plen;
+		len -= plen;
 
+		s_reqFuncs[uuid >> 1](packer);
+		++val;
+	}
+	packer->setDoneValue(val, verify, link);
 #else
 	while(len > 0)
 	{
@@ -435,7 +459,7 @@ int unpackData(const char *src, int size)
 
 
 #ifdef LRB_APPSERVER
-void bindReqFunc(int uuid, const std::function<void(int, int)> &func)
+void bindReqFunc(int uuid, const std::function<void(DataPacker *)> &func)
 {
 	s_reqFuncs[uuid >> 1] = func;
 }

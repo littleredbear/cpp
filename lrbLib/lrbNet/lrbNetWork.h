@@ -50,7 +50,13 @@ namespace NetWork {
 
 		void disConnect();
 		void connectServer(const std::string &host, const std::string &service);
-		void acceptLink(int sockfd, int handler);
+		void acceptLink(int sockfd);
+
+		void bindLastLink(NetLink *link);
+		void bindNextLink(NetLink *link);
+
+		NetLink *lastLink();
+		NetLink *nextLink();
 		
 	private:
 		void sendNetData();
@@ -73,7 +79,30 @@ namespace NetWork {
 		int m_verify;
 		int m_handler;
 
+		NetLink *m_last;
+		NetLink *m_next;
+
 		short m_events;
+
+	};
+
+//--------------------------------Link Manager------------------------------------
+
+	class LinkManager {
+	public:
+		const static int s_defaultNum = 128;
+		LinkManager();
+		~LinkManager();
+
+		NetLink *getAvailableLink();
+		void reuseNetLink(NetLink *link);
+		
+	private:
+		NetLink m_links[s_defaultNum];
+		int m_size;
+		NetLink *m_head;
+		NetLink *m_able;
+		NetLink *m_back;
 
 	};
 
@@ -85,10 +114,8 @@ namespace NetWork {
 
 	private:
 		void acceptFunc(int fd, short events);
-		void verifyFunc(int sockfd, short events, int *handler);
 	};
 
-//--------------------------------Link Manager------------------------------------
 
 	void connectServer(const std::string &hostname, const std::string &service, int uuid);
 	void startService(short service);

@@ -3,11 +3,17 @@
 
 #include <string>
 #include <functional>
+#include <vector>
 
 
 #define LRB_APPSERVER
 
+
 namespace lrb {
+
+namespace NetWork {
+	class NetLink;
+}
 
 namespace NetData {
 
@@ -37,7 +43,7 @@ namespace NetData {
 		~DataPacker();
 
 		void packData(void *data, int size, bool verify = false);
-		void setDoneValue(int val, int uuid, int verify);
+		void setDoneValue(int val, int verify, lrb::NetWork::NetLink *link);
 
 		void bindLastPacker(DataPacker *packer);
 		void bindNextPacker(DataPacker *packer);
@@ -54,8 +60,8 @@ namespace NetData {
 
 		int m_doneVal;
 		int m_curVal;
-		int m_uuid;
 		int m_verify;
+		lrb::NetWork::NetLink *m_link;
 
 		DataPacker *m_last;
 		DataPacker *m_next;
@@ -90,16 +96,16 @@ namespace NetData {
 		DataParser();
 		~DataParser();
 	
-		void parseNetData(char *data, int size);	
+		void parseNetData(char *data, int size, int verify, lrb::NetWork::NetLink *link);	
 
 	private:
-		void parseFirstData(char *data, int size);
-		void parseNetFrame(char *frame, int len);
+		void parseFirstData(char *data, int size, int verify, lrb::NetWork::NetLink *link);
+		void parseNetFrame(char *frame, int len, int verify, lrb::NetWork::NetLink *link);
 			
 		char *m_dataCache;
 		int m_cacheLen;
 		int m_frameLen;
-
+		int m_verify;
 	};
 
 	int packData(const char *src, int uuid, void **res); //res需要自行释放
