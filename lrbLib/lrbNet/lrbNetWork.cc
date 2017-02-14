@@ -322,12 +322,46 @@ LinkManager::~LinkManager()
 
 NetLink *LinkManager::getAvailableLink()
 {
-	return NULL;
+	if (m_able == m_back)
+	{
+		NetLink *ptr = (NetLink *)calloc(m_size, sizeof(NetLink));
+		if (ptr == NULL)
+			return NULL;
+		
+		m_back->bindNextLink(ptr);
+		ptr->bindLastLink(m_back);
+		m_back = ptr + m_size - 1;
+		m_size = m_size << 1;
+	}
+
+	NetLink *last = m_able;
+	m_able = m_able->nextLink();
+	return last;
 }
 
 void LinkManager::reuseNetLink(NetLink *link)
 {
+	NetLink *next = link->nextLink();
+	if (next == m_able)
+	{
+		m_able = link;
+		return;
+	}
 
+	if (m_head == link)
+	{	
+		m_head = next;
+	} else 
+	{
+		NetLink *last = link->lastLink();
+		last->bindNextLink(next);
+		next->bindLastLink(last);
+	}
+
+	m_back->bindNextLink(link);
+	link->bindLastLink(m_back);
+	m_back = link;
+	
 }
 
 //---------------------------------------------Link Acceptor-----------------------------
@@ -372,6 +406,9 @@ void LinkAcceptor::acceptFunc(int fd, short events)
 			assert(fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == 0);
 			
 			NetLink *link = s_manager.getAvailableLink();
+			if (link == NULL)
+				break; // to be continued 
+
 			link->acceptLink(sockfd);
 	
 		} while(1);
