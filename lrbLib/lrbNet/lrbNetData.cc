@@ -11,26 +11,16 @@ using namespace lrb::NetData;
 
 #ifdef LRB_APPSERVER
 
-ReqVerifyData g_ReqVerifyData;
-
-static void *s_ptrs[] = {&g_ReqVerifyData,};
-
 static std::function<void(DataPacker *)> s_reqFuncs[1];
 
 #else
-
-AckVerifyData g_AckVerifyData;
-
-static void *s_ptrs[] = {&g_AckVerifyData,};
 
 static std::unordered_map<int, std::function<void()> > s_ackFuncs;
 
 #endif
 
-const static short s_confs[][5] = {
-	{0,0,4,0,0,},
-	{0,0,4,0,0,},
-};
+extern void **g_lrb_protobuf_ptrs;
+extern short **g_lrb_protobuf_confs;
 
 static DataCenter s_center;
 
@@ -333,12 +323,12 @@ int packData(const char *src, int uuid, void **res)
 	int len = 5;
 	for (int i=1;i<5;++i)
 	{
-		if (s_confs[uuid][i] > 0)
-			len += (s_confs[uuid][i] + 3);
+		if (g_lrb_protobuf_confs[uuid][i] > 0)
+			len += (g_lrb_protobuf_confs[uuid][i] + 3);
 	}
 
 	int c = 0;
-	while(c < s_confs[uuid][0])
+	while(c < g_lrb_protobuf_confs[uuid][0])
 	{
 		std::string *ptr = (std::string *)(src + c);
 		len += (ptr->size() + 1);
@@ -357,16 +347,16 @@ int packData(const char *src, int uuid, void **res)
 	short offs[5] = {-1,-1,-1,-1,-1};
 	for (int i=0;i<5;++i)
 	{
-		if (s_confs[uuid][i] > 0)
+		if (g_lrb_protobuf_confs[uuid][i] > 0)
 		{
 			offs[i] = off;
-			off += s_confs[uuid][i];
+			off += g_lrb_protobuf_confs[uuid][i];
 		}
 	}
 
 	for (char i=1;i<5;++i)
 	{
-		short vlen = s_confs[uuid][i];
+		short vlen = g_lrb_protobuf_confs[uuid][i];
 		if (vlen > 0)
 		{
 			*ptr = i;
@@ -382,7 +372,7 @@ int packData(const char *src, int uuid, void **res)
 
 	ptr += sizeof(char);
 	c = 0;
-	while(c < s_confs[uuid][0])
+	while(c < g_lrb_protobuf_confs[uuid][0])
 	{
 		std::string *sptr = (std::string *)(src + c);
 		memcpy(ptr, sptr->c_str(), sptr->size());
@@ -405,15 +395,15 @@ int unpackData(const char *src, int size)
 	short offs[5] = {-1,-1,-1,-1,-1};
 	for (int i=0;i<5;++i)
 	{
-		if (s_confs[uuid][i] > 0)
+		if (g_lrb_protobuf_confs[uuid][i] > 0)
 		{
 			offs[i] = off;
-			off += s_confs[uuid][i];
+			off += g_lrb_protobuf_confs[uuid][i];
 		}
 	}
 
-	char *dst = (char *)s_ptrs[uuid >> 1];
-	memset(dst + s_confs[uuid][0], 0, off-s_confs[uuid][0]);
+	char *dst = (char *)g_lrb_protobuf_ptrs[uuid >> 1];
+	memset(dst + g_lrb_protobuf_confs[uuid][0], 0, off-g_lrb_protobuf_confs[uuid][0]);
 
 	while(size > 0)
 	{
@@ -424,7 +414,7 @@ int unpackData(const char *src, int size)
 		if (type == 0)
 		{
 			int c = 0;
-			while(c < s_confs[uuid][0])
+			while(c < g_lrb_protobuf_confs[uuid][0])
 			{
 				std::string *ptr = (std::string *)(dst + c);
 				if (size > 0)
@@ -447,7 +437,7 @@ int unpackData(const char *src, int size)
 			size -= sizeof(short);
 			
 			if (offs[type] != -1)
-				memcpy(dst + offs[type], src, std::min(len, s_confs[uuid][type]));
+				memcpy(dst + offs[type], src, std::min(len, g_lrb_protobuf_confs[uuid][type]));
 			
 			src += len;
 			size -= len;

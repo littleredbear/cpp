@@ -6,7 +6,7 @@
 #include <vector>
 
 
-#define LRB_APPSERVER
+//#define LRB_APPSERVER
 
 
 namespace lrb {
@@ -16,24 +16,6 @@ namespace NetWork {
 }
 
 namespace NetData {
-
-	struct ReqVerifyData {
-//string
-
-//8
-
-//4
-		int verify;
-//2
-
-//1
-
-	};
-
-	struct AckVerifyData {
-
-		int verify;
-	};
 
 //-----------------------------------------Data Packer-------------------------------
 
