@@ -44,7 +44,7 @@ for t in $txt
 do
 	if [[ $t == '};' ]] 
 	then
-		confs=${confs}${off0}','${off1}','${off2}','${off3}','${off4}
+		confs=${confs}${off0}'*sizeof(std::string),'${off1}','${off2}','${off3}','${off4}
 		confs=$confs'},\n{'
 		tp=0
 		off0=0
@@ -56,9 +56,9 @@ do
 	then
 		if [[ $tp == 0 ]]
 		then
-			off0=$(($off0+24))
+			off0=$(($off0+1))
 		else
-			off0=24
+			off0=1
 		fi
 		tp=0
 	elif [[ $t == *int64_t || $t == 'double' ]]

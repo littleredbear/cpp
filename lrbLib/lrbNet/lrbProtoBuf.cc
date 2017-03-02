@@ -20,8 +20,8 @@ void *g_lrb_protobuf_ptrs[] = {
 #endif
 
 short g_lrb_protobuf_confs[][5] = {
-{0,0,4,0,0},
-{0,0,4,0,0},
-{24,0,4,0,0},
-{24,0,4,0,0},
+{0*sizeof(std::string),0,4,0,0},
+{0*sizeof(std::string),0,4,0,0},
+{1*sizeof(std::string),0,4,0,0},
+{1*sizeof(std::string),0,4,0,0},
 };
