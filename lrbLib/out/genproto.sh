@@ -7,20 +7,21 @@ path=${dir}'lrbProtoBuf.h'
 txt=`sed -n 's/struct \(.*\) {/\1/p' $path`
 
 reqtxt=
-reqptr='void *g_lrb_protobuf_ptrs[] = {'
+reqptr='void *g_lrb_protobuf_ptrs[] = {\n'
 acktxt=
-ackptr='void *s_lrb_protobuf_ptrs[] = {'
+ackptr='void *s_lrb_protobuf_ptrs[] = {\n'
+pre='g_lrb_protobuf_'
 
 for t in $txt
 do
-	tmp=$t' g_'$t';\n'
+	tmp=$t' '${pre}${t}';\n'
 	if [[ $t == Req* ]]
 	then
 		reqtxt=${reqtxt}${tmp}
-		reqptr=${reqptr}'&g_'$t','
+		reqptr=${reqptr}'&'${pre}$t',\n'
 	else
 		acktxt=${acktxt}${tmp}
-		ackptr=${ackptr}'&g_'$t','
+		ackptr=${ackptr}'&'${pre}$t',\n'
 	fi
 	
 done
@@ -60,7 +61,7 @@ do
 			off0=24
 		fi
 		tp=0
-	elif [[ $t == 'int64_t' ]]
+	elif [[ $t == *int64_t || $t == 'double' ]]
 	then
 		if [[ $tp == 1 ]]
 		then
@@ -69,7 +70,7 @@ do
 			off1=8
 		fi
 		tp=1
-	elif [[ $t == 'int' ]]
+	elif [[ $t == *int32_t || $t == 'float' ]]
 	then
 		if [[ $t == 2 ]]
 		then
@@ -78,7 +79,7 @@ do
 			off2=4
 		fi
 		tp=2
-	elif [[ $t == 'short' ]]
+	elif [[ $t == *int16_t ]]
 	then
 		if [[ $t == 3 ]]
 		then
@@ -87,7 +88,7 @@ do
 			off3=2
 		fi
 		tp=3
-	elif [[ $t == 'char' ]]
+	elif [[ $t == *int8_t ]]
 	then
 		if [[ $t == 4 ]]
 		then

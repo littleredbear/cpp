@@ -3,37 +3,29 @@
 
 #include <string>
 
+//整形必须用int32_t
+//结构排序string,8,4,2,1字节
+
 namespace lrb {
 
 namespace ProtoBuf {
 
 	struct ReqVerifyData {
-//string
-
-//8
-
-//4
-		int verify;
-
-//2
-
-//1
-
+		uint32_t verify;
 	};
 		
 	struct AckVerifyData {
-		int verify;
+		uint32_t verify;
 	};
 
 	struct ReqRoleInfo {
 		std::string name;
-		int roleId;
-
+		uint32_t roleId;
 	};
 
 	struct AckRoleInfo {
 		std::string name;
-		int roleId;
+		uint32_t roleId;
 	};
 
 }
