@@ -205,6 +205,7 @@ namespace NetWork {
         int unpackData(const char *src, int size);
         void bindReqFunc(int uuid, const std::function<void(DataPacker *)> &func);
         void bindAckFunc(int verify, const std::function<void()> &func);
+	void bindConnectFunc(const std::function<void(NetLink *)> &func);
 
 }
 

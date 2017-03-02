@@ -1,7 +1,7 @@
 
-target:=liblrb.so
+target:=libserv1.so
 cc:=g++
-cflags:=-std=c++11
+cflags:=-std=c++11 -DLRB_APPSERVER
 lflags:=-shared -fpic
 src_pattern:="*.c*"
 projdir:=".."

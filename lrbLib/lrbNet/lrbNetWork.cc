@@ -16,8 +16,8 @@
 
 using namespace lrb::NetWork;
 
-extern void **g_lrb_protobuf_ptrs;
-extern short **g_lrb_protobuf_confs;
+extern void *g_lrb_protobuf_ptrs[];
+extern short g_lrb_protobuf_confs[][5];
 extern lrb::ProtoBuf::AckVerifyData g_lrb_protobuf_AckVerifyData;
 
 namespace {
@@ -32,8 +32,10 @@ namespace {
 
 	DataCenter s_center;
 
+	std::function<void(NetLink *)> s_linkConnectFunc;
+
 #ifdef LRB_APPSERVER
-	std::function<void(DataPacker *)> s_reqFuncs[1];
+	std::function<void(DataPacker *)> s_reqFuncs[2];
 #else
 	std::unordered_map<int, std::function<void()> > s_ackFuncs;
 #endif
@@ -132,9 +134,11 @@ void DataPacker::sendData()
 
                 memcpy(ptr, m_datas[i], len);
                 ptr += len;
+		
+		free(m_datas[i]);
         }
 
-        RunLoop::runInLoop(std::bind(&NetLink::addNetData, m_link, m_verify, data, size), RunLoopType::RLT_NET);
+        RunLoop::runInLoop(std::bind(&NetLink::addNetData, m_link, m_verify, data, size+sizeof(int)), RunLoopType::RLT_NET);
         reusePacker();
 }
 
@@ -266,15 +270,14 @@ void DataParser::parseFirstData(char *data, int size, int verify, NetLink *link)
                 data += sizeof(int);
                 size -= sizeof(int);
 
-                int leftLen = size - sizeof(int);
-                if (frameLen > leftLen)
+                if (frameLen > size)
                 {
                         m_dataCache = (char *)calloc(frameLen, sizeof(char));
                         if (m_dataCache)
                         {
-                                memcpy(m_dataCache, data, leftLen);
+                                memcpy(m_dataCache, data, size);
                                 m_frameLen = frameLen;
-                                m_cacheLen = leftLen;
+                                m_cacheLen = size;
                                 m_verify = verify;
                         }
                         break;
@@ -316,7 +319,7 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
                 frame += sizeof(int);
                 len -= sizeof(int);
 
-                unpackData(frame, plen);
+                int uuid = unpackData(frame, plen);
                 frame += plen;
                 len -= plen;
         }
@@ -491,7 +494,7 @@ void NetLink::connectServer(const std::string &host, const std::string &service)
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_socktype = SOCK_STREAM;
 	
-	int ret = getaddrinfo(host.c_str(), service.c_str(), NULL, &res);
+	int ret = getaddrinfo(host.c_str(), service.c_str(), &hints, &res);
 	if (ret == -1) 
 		return; // fail to be continued
 
@@ -505,9 +508,9 @@ void NetLink::connectServer(const std::string &host, const std::string &service)
 		assert(flags != -1);
 		assert(fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == 0);
 
-		assert(connect(sockfd, cur->ai_addr, cur->ai_addrlen) == -1);
+		int ret = connect(sockfd, cur->ai_addr, cur->ai_addrlen);
 		
-		if (errno == EINPROGRESS)
+		if (ret == 0 || errno == EINPROGRESS)
 		{
 			m_fd = sockfd;
 			m_events = POLLIN | POLLOUT;
@@ -563,12 +566,18 @@ void NetLink::sendNetData()
 	if (m_state == LinkState::LS_TOLINK)
 	{
 		m_state = LinkState::LS_LINKED;
+		if (s_linkConnectFunc)
+			RunLoop::runInLoop(std::bind(s_linkConnectFunc, this), RunLoopType::RLT_LOGIC);
 		//connection established
 	}
 
 	while(m_execData->writeNetData(m_fd, m_verify, m_off))
 		m_execData = m_execData->nextData();
 
+	if (m_execData->empty() && (m_events & POLLOUT)) {
+		m_events = POLLIN;
+		RunLoop::updatePollFd(m_handler, m_events, std::function<void(int, short)>());
+	}
 }
 
 void NetLink::readNetData()
@@ -887,6 +896,11 @@ void bindAckFunc(int verify, const std::function<void()> &func)
         s_ackFuncs[verify] = func;
 }
 #endif
+
+void bindConnectFunc(const std::function<void(NetLink *)> &func)
+{
+	s_linkConnectFunc = func;
+}
 
 }
 
