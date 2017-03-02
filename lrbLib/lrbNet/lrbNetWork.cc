@@ -1,5 +1,6 @@
 #include "lrbNetWork.h"
 #include "lrbRunLoop.h"
+#include "lrbProtoBuf.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,12 +9,16 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <poll.h>
+#ifndef LRB_APPSERVER
+#include <unordered_map>
+#endif
 
 
 using namespace lrb::NetWork;
 
 extern void **g_lrb_protobuf_ptrs;
 extern short **g_lrb_protobuf_confs;
+extern lrb::ProtoBuf::AckVerifyData g_lrb_protobuf_AckVerifyData;
 
 namespace {
 
@@ -316,7 +321,7 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
                 len -= plen;
         }
 
-        auto iter = s_ackFuncs.find(g_AckVerifyData.verify);
+        auto iter = s_ackFuncs.find(g_lrb_protobuf_AckVerifyData.verify);
         if (iter != s_ackFuncs.end())
                 iter->second();
 

@@ -13,7 +13,7 @@ void *g_lrb_protobuf_ptrs[] = {
 #else
 AckVerifyData g_lrb_protobuf_AckVerifyData;
 AckRoleInfo g_lrb_protobuf_AckRoleInfo;
-void *s_lrb_protobuf_ptrs[] = {
+void *g_lrb_protobuf_ptrs[] = {
 &g_lrb_protobuf_AckVerifyData,
 &g_lrb_protobuf_AckRoleInfo,
 };

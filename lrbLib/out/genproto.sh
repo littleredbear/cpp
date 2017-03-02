@@ -9,7 +9,7 @@ txt=`sed -n 's/struct \(.*\) {/\1/p' $path`
 reqtxt=
 reqptr='void *g_lrb_protobuf_ptrs[] = {\n'
 acktxt=
-ackptr='void *s_lrb_protobuf_ptrs[] = {\n'
+ackptr='void *g_lrb_protobuf_ptrs[] = {\n'
 pre='g_lrb_protobuf_'
 
 for t in $txt
