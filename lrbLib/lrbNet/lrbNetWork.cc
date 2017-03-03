@@ -1,6 +1,6 @@
 #include "lrbNetWork.h"
 #include "lrbRunLoop.h"
-#include "lrbProtoBuf.h"
+#include "lrbProtocol.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,9 +9,7 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <poll.h>
-#ifndef LRB_APPSERVER
 #include <unordered_map>
-#endif
 
 
 using namespace lrb::NetWork;
@@ -34,9 +32,7 @@ namespace {
 
 	std::function<void(NetLink *)> s_linkConnectFunc;
 
-#ifdef LRB_APPSERVER
 	std::function<void(DataPacker *)> s_reqFuncs[2];
-#else
 	std::unordered_map<int, std::function<void()> > s_ackFuncs;
 #endif
 
@@ -249,7 +245,7 @@ void DataParser::parseNetData(char *data, int size, int verify, NetLink *link)
                         } else
                         {
                                 memcpy(m_dataCache + m_cacheLen, data, needLen);
-                                parseNetFrame(m_dataCache, m_frameLen, m_verify, link);
+				lrb::Protocol::parseProtoFrame(m_dataCache, m_frameLen, m_verify, link);
                                 free(m_dataCache);
                                 m_dataCache = NULL;
 
@@ -283,7 +279,7 @@ void DataParser::parseFirstData(char *data, int size, int verify, NetLink *link)
                         break;
                 } else
                 {
-                        parseNetFrame(data, frameLen, verify, link);
+			lrb::Protocol::parseProtoFrame(data, frameLen, verify, link);
                         data += frameLen;
                         size -= frameLen;
                 }
@@ -415,6 +411,8 @@ NetData *NetData::nextData()
 NetLink::NetLink():
 m_size(s_defaultNum),
 m_state(LinkState::LS_CLOSED),
+m_ttype(TerminalType::TT_NONE),
+m_protoId(0),
 m_off(0),
 m_fd(0),
 m_verify(0),
@@ -475,11 +473,10 @@ void NetLink::disConnect()
 
 	RunLoop::removePollFd(m_handler);
 	close(m_fd);
+	m_ttype = TerminalType::TT_NONE;
 	m_state = LinkState::LS_CLOSED;
 
-#ifdef LRB_APPSERVER
 	s_manager.reuseNetLink(this);
-#endif
 	//close callback to be continued
 }
 
@@ -515,6 +512,7 @@ void NetLink::connectServer(const std::string &host, const std::string &service)
 			m_fd = sockfd;
 			m_events = POLLIN | POLLOUT;
 			++m_verify;
+			m_ttype = TerminalType::TT_CLIENT;
 			m_state = LinkState::LS_TOLINK;
 
 			m_handler = RunLoop::addPollFd(sockfd, m_events, std::bind(&NetLink::linkFunc, this, std::placeholders::_1, std::placeholders::_2));
@@ -532,6 +530,7 @@ void NetLink::acceptLink(int sockfd)
 	m_fd = sockfd;
 	m_events = POLLIN;
 	++m_verify;
+	m_ttype = TerminalType::TT_SERVER;
 	m_state = LinkState::LS_LINKED;
 	
 	m_handler = RunLoop::addPollFd(sockfd, m_events, std::bind(&NetLink::linkFunc, this, std::placeholders::_1, std::placeholders::_2));
@@ -559,6 +558,16 @@ NetLink *NetLink::nextLink()
 	if (m_next == NULL)
 		return this + 1;
 	return m_next;
+}
+
+TerminalType NetLink::currentTType()
+{
+	return m_ttype;
+}
+
+int NetLink::currentProtoId()
+{
+	return m_protoId;
 }
 
 void NetLink::sendNetData()
@@ -735,7 +744,7 @@ namespace lrb {
 
 namespace NetWork {
 
-void connectServer(const std::string &hostname, const std::string &service, int uuid)
+void connectServer(const std::string &hostname, const std::string &service, int uuid, int protoId)
 {
 	RunLoop::runInLoop(std::bind(&NetLink::connectServer, &s_links[uuid], hostname, service), RunLoopType::RLT_NET);
 }
@@ -884,18 +893,15 @@ int unpackData(const char *src, int size)
         return uuid;
 }
 
-#ifdef LRB_APPSERVER
 void bindReqFunc(int uuid, const std::function<void(DataPacker *)> &func)
 {
         s_reqFuncs[uuid >> 1] = func;
 }
 
-#else
 void bindAckFunc(int verify, const std::function<void()> &func)
 {
         s_ackFuncs[verify] = func;
 }
-#endif
 
 void bindConnectFunc(const std::function<void(NetLink *)> &func)
 {

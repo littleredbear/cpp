@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 
 path=`pwd`
-dir=${path%/*}'/lrbNet/'
-path=${dir}'lrbProtoBuf.h'
+dir=${path%/*}'/lrbProto/'
+
+protos='lrbGameProto'
+
+for p in $protos
+do
+
+done
+
+
+path=${dir}'lrbGameProto.h'
 
 txt=`sed -n 's/struct \(.*\) {/\1/p' $path`
 

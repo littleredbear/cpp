@@ -97,6 +97,12 @@ namespace NetWork {
 		LS_LINKED
 	};
 
+	enum TerminalType {
+		TT_NONE,
+		TT_CLIENT,
+		TT_SERVER,
+	};
+
 	class NetData {
 	public:
 		NetData();
@@ -137,6 +143,9 @@ namespace NetWork {
 
 		NetLink *lastLink();
 		NetLink *nextLink();
+
+		TerminalType currentTType();
+		int currentProtoId();
 		
 	private:
 		void sendNetData();
@@ -154,6 +163,8 @@ namespace NetWork {
 		int m_size;
 
 		LinkState m_state;
+		TerminalType m_ttype;
+		int m_protoId;
 		int m_off;
 		int m_fd;
 		int m_verify;
@@ -197,7 +208,7 @@ namespace NetWork {
 	};
 
 
-	void connectServer(const std::string &hostname, const std::string &service, int uuid);
+	void connectServer(const std::string &hostname, const std::string &service, int uuid, int protoId);
 	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, int verify, void *data, size_t size);
