@@ -91,16 +91,22 @@ namespace NetWork {
 
 //-------------------------------Net Data----------------------------------
 
-	enum LinkState {
+	enum class LinkState {
 		LS_CLOSED = 0,
 		LS_TOLINK,
 		LS_LINKED
 	};
 
-	enum TerminalType {
+	enum class TerminalType {
 		TT_NONE,
 		TT_CLIENT,
 		TT_SERVER,
+	};
+
+	enum class ProtoType {
+		PT_VERIFY,
+		PT_GAME,
+		PT_TOP,
 	};
 
 	class NetData {
@@ -145,7 +151,7 @@ namespace NetWork {
 		NetLink *nextLink();
 
 		TerminalType currentTType();
-		int currentProtoId();
+		ProtoType currentProtoType();
 		
 	private:
 		void sendNetData();
@@ -164,7 +170,7 @@ namespace NetWork {
 
 		LinkState m_state;
 		TerminalType m_ttype;
-		int m_protoId;
+		ProtoType m_protoType;
 		int m_off;
 		int m_fd;
 		int m_verify;
@@ -212,10 +218,10 @@ namespace NetWork {
 	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, int verify, void *data, size_t size);
-        int packData(const char *src, int uuid, void **res); //res需要自行释放
-        int unpackData(const char *src, int size);
-        void bindReqFunc(int uuid, const std::function<void(DataPacker *)> &func);
-        void bindAckFunc(int verify, const std::function<void()> &func);
+        int packData(const char *src, int uuid, void **res, ProtoType ptype); //res需要自行释放
+        int unpackData(const char *src, int size, ProtoType ptype);
+        void bindProtoReqFunc(int protoId, const std::function<void(DataPacker *)> &func);
+        void bindProtoAckFunc(AckFuncType ackType, const std::function<void()> &func);
 	void bindConnectFunc(const std::function<void(NetLink *)> &func);
 
 }

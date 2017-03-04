@@ -6,19 +6,36 @@ using namespace lrb::Protocol;
 
 namespace {
 
-	int (*s_proto_packer[])(const char *, int, void **) = {
+	extern int g_lrb_VerifyProto_protoNum;
+	extern void *g_lrb_VerifyProto_ptrs[];
+	extern short g_lrb_VerifyProto_confs[][5];
 
+	extern int g_lrb_GameProto_protoNum;
+	extern void *g_lrb_GameProto_ptrs[];
+	extern short g_lrb_GameProto_confs[][5];
+
+	int s_lrb_proto_nums[] = {
+		g_lrb_VerifyProto_protoNum,
+		g_lrb_GameProto_protoNum,
 	};
 
-	int (*s_proto_unpacker[])(const char *, int) = {
-
+	void **s_lrb_proto_unpackDests[] = {
+		g_lrb_VerifyProto_ptrs,
+		g_lrb_GameProto_ptrs,
 	};
+
+	short (*s_lrb_proto_confs[])[5] = {
+		g_lrb_VerifyProto_confs,
+		g_lrb_GameProto_confs,
+	};
+
 }
 
 
 namespace lrb {
 
 namespace Protocol {
+
 
 void parseProtoFrame(char *frame, int len, int verify, lrb::NetWork::NetLink *link)
 {
@@ -70,6 +87,7 @@ void parseProtoFrame(char *frame, int len, int verify, lrb::NetWork::NetLink *li
 	break;
 	}
 }
+
 
 }
 

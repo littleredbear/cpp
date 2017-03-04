@@ -1,6 +1,5 @@
 #include "lrbNetWork.h"
 #include "lrbRunLoop.h"
-#include "lrbProtocol.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,14 +8,27 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <poll.h>
-#include <unordered_map>
 
 
 using namespace lrb::NetWork;
 
-extern void *g_lrb_protobuf_ptrs[];
-extern short g_lrb_protobuf_confs[][5];
-extern lrb::ProtoBuf::AckVerifyData g_lrb_protobuf_AckVerifyData;
+namespace lrb {
+
+namespace VerifyProto {
+	void *getUnpackDest(int protoId);
+	short *getProtoConfs(int protoId);
+	void execReqFunc(int protoId);
+	void execAckFunc();
+}
+
+namespace GameProto {
+	void *getUnpackDest(int protoId);
+	short *getProtoConfs(int protoId);
+	void execReqFunc(int protoId);
+	void execAckFunc();
+}
+
+}
 
 namespace {
 
@@ -32,9 +44,25 @@ namespace {
 
 	std::function<void(NetLink *)> s_linkConnectFunc;
 
-	std::function<void(DataPacker *)> s_reqFuncs[2];
-	std::unordered_map<int, std::function<void()> > s_ackFuncs;
-#endif
+	void *(*s_lrb_proto_unpackdests[])(int) = {
+		lrb::VerifyProto::getUnpackDest,
+		lrb::GameProto::getUnpackDest,
+	};
+
+	short *(*s_lrb_proto_confs[])(int) = {
+		lrb::VerifyProto::getProtoConfs,
+		lrb::GameProto::getProtoConfs,
+	};
+
+	void (*s_lrb_proto_reqfuncs[])(int) = {
+		lrb::VerifyProto::execReqFunc,
+		lrb::GameProto::execReqFunc,
+	};
+
+	void (*s_lrb_proto_ackfuncs[])() = {
+		lrb::VerifyProto::execAckFunc,
+		lrb::GameProto::execAckFunc,
+	};
 
 }
 
@@ -245,7 +273,7 @@ void DataParser::parseNetData(char *data, int size, int verify, NetLink *link)
                         } else
                         {
                                 memcpy(m_dataCache + m_cacheLen, data, needLen);
-				lrb::Protocol::parseProtoFrame(m_dataCache, m_frameLen, m_verify, link);
+				parseNetFrame(m_dataCache, m_frameLen, m_verify, link);
                                 free(m_dataCache);
                                 m_dataCache = NULL;
 
@@ -279,7 +307,7 @@ void DataParser::parseFirstData(char *data, int size, int verify, NetLink *link)
                         break;
                 } else
                 {
-			lrb::Protocol::parseProtoFrame(data, frameLen, verify, link);
+			parseNetFrame(data, frameLen, verify, link);
                         data += frameLen;
                         size -= frameLen;
                 }
@@ -289,42 +317,38 @@ void DataParser::parseFirstData(char *data, int size, int verify, NetLink *link)
 
 void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 {
-#ifdef LRB_APPSERVER
-        DataPacker *packer = s_center.getAvailablePacker();
-        int val = 0;
-        while(len > 0)
-        {
-                int plen;
-                memcpy(&plen, frame, sizeof(int));
-                frame += sizeof(int);
-                len -= sizeof(int);
+	ProtoType ptype = link->currentProtoType();
+	if (ptype < ProtoType::PT_VERIFY || ptype >= ProtoType::PT_TOP)
+		return;
 
-                int uuid = unpackData(frame, plen);
-                frame += plen;
-                len -= plen;
+	int val = 0;
+	bool termserv = link->currentTType() == TerminalType::TT_SERVER;
+	while(len > 0)
+	{
+		int plen;
+		memcpy(&plen, frame, sizeof(int));
+		frame += sizeof(int);
+		len -= sizeof(int);
 
-                s_reqFuncs[uuid >> 1](packer);
-                ++val;
-        }
-        packer->setDoneValue(val, verify, link);
-#else
-        while(len > 0)
-        {
-                int plen;
-                memcpy(&plen, frame, sizeof(int));
-                frame += sizeof(int);
-                len -= sizeof(int);
+		int uuid = unpackData(frame, plen);
+		frame += plen;
+		len -= plen;
+		
+		if (termserv)
+			s_lrb_proto_reqfuncs[(int)ptype](uuid);
+		++val;
+	}
+	
+	if (termserv)
+	{
+		DataPacker *packer = s_center.getAvailablePacker();
+		packer->setDoneValue(val, verify, link);
 
-                int uuid = unpackData(frame, plen);
-                frame += plen;
-                len -= plen;
-        }
+	} else 
+	{
+		s_lrb_proto_ackfuncs[(int)ptype]();
+	}
 
-        auto iter = s_ackFuncs.find(g_lrb_protobuf_AckVerifyData.verify);
-        if (iter != s_ackFuncs.end())
-                iter->second();
-
-#endif
 }
 
 
@@ -412,7 +436,7 @@ NetLink::NetLink():
 m_size(s_defaultNum),
 m_state(LinkState::LS_CLOSED),
 m_ttype(TerminalType::TT_NONE),
-m_protoId(0),
+m_protoType(ProtoType::PT_VERIFY),
 m_off(0),
 m_fd(0),
 m_verify(0),
@@ -565,9 +589,9 @@ TerminalType NetLink::currentTType()
 	return m_ttype;
 }
 
-int NetLink::currentProtoId()
+ProtoType NetLink::currentProtoType()
 {
-	return m_protoId;
+	return m_protoType;
 }
 
 void NetLink::sendNetData()

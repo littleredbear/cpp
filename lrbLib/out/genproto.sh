@@ -3,24 +3,29 @@
 path=`pwd`
 dir=${path%/*}'/lrbProto/'
 
-protos='lrbGameProto'
+protos=`ls $dir`
 
-for p in $protos
+for proto in $protos
 do
+	if [[ $ptoro == *.cc || $proto == 'lrbProtocol.h' ]]
+	then
+		continue
+	fi
 
-done
+	path=${dir}${proto}
 
-
-path=${dir}'lrbGameProto.h'
+mname=${proto%.h}
+mname=${mname#lrb}
 
 txt=`sed -n 's/struct \(.*\) {/\1/p' $path`
 
 reqtxt=
-reqptr='void *g_lrb_protobuf_ptrs[] = {\n'
+reqptr='void *g_lrb_'$mname'_ptrs[] = {\n'
 acktxt=
-ackptr='void *g_lrb_protobuf_ptrs[] = {\n'
-pre='g_lrb_protobuf_'
+ackptr='void *g_lrb_'$mname'_ptrs[] = {\n'
+pre='g_lrb_'$mname'_'
 
+protonum=0
 for t in $txt
 do
 	tmp=$t' '${pre}${t}';\n'
@@ -32,17 +37,18 @@ do
 		acktxt=${acktxt}${tmp}
 		ackptr=${ackptr}'&'${pre}$t',\n'
 	fi
+	protonum=$(($protonum+1))
 	
 done
 
 reqptr=${reqptr}'};\n'
 ackptr=${ackptr}'};\n'
 
-output='#include "lrbProtoBuf.h"\n\n\nusing namespace lrb::ProtoBuf;\n\n#ifdef LRB_APPSERVER\n'${reqtxt}${reqptr}'#else\n'${acktxt}${ackptr}'#endif\n\n'
+output='#include "'$proto'"\n\n\n\n#ifdef LRB_'$mname'_SERVER\n'${reqtxt}${reqptr}'#else\n'${acktxt}${ackptr}'#endif\n\n'
 
 txt=`sed -n '/struct/,/};/{s/struct \([^{]*\) {//;p;}' $path`
 
-confs='short g_lrb_protobuf_confs[][5] = {\n{';
+confs='short g_lrb_'$mname'_confs[][5] = {\n{';
 tp=0
 off0=0
 off1=0
@@ -111,7 +117,12 @@ do
 done
 
 confs=${confs%\{};
-confs=${confs}'};'
+confs=${confs}'};\n\n'
+confs=${confs}'int g_lrb_'$mname'_protoNum = '$protonum';\n\n'
 
-echo ${output}${confs} > ${dir}'lrbProtoBuf.cc'
+
+echo ${output}${confs} > ${dir}${proto/.h/.cc}
+
+done
+
 echo "proto done"
