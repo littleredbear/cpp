@@ -149,7 +149,6 @@ namespace NetWork {
 		TerminalType currentTType();
 		ProtoType currentProtoType();
 
-		void updateProtoType(ProtoType type);
 		void processLinkProto(int protoId);
 		
 	private:

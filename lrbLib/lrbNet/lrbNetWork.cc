@@ -598,11 +598,6 @@ ProtoType NetLink::currentProtoType()
 	return m_protoType;
 }
 
-void NetLink::updateProtoType(ProtoType type)
-{
-	m_protoType = type;
-}
-
 void NetLink::processLinkProto(int protoId)
 {
 	switch (protoId)
