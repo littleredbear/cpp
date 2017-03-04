@@ -1,7 +1,7 @@
 
 target:=liblrb.so
 cc:=g++
-cflags:=-std=c++11 -DLRB_VerifyProto_SERVER -DLRB_GameProto_SERVER
+cflags:=-std=c++11 -DLRB_GameProto_SERVER
 lflags:=-shared -fpic
 src_pattern:="*.c*"
 projdir:=".."

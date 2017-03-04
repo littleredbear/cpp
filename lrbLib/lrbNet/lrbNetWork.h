@@ -18,7 +18,7 @@ namespace NetWork {
                 DataPacker();
                 ~DataPacker();
                 
-                void packData(void *data, int size, bool verify = false);
+                void packData(void *data, int size);
                 void setDoneValue(int val, int verify, NetLink *link);
 				void sendData(int verify, int linkId);
 
@@ -100,7 +100,7 @@ namespace NetWork {
 	};
 
 	enum class ProtoType {
-		PT_VERIFY,
+		PT_LINK,
 		PT_GAME,
 		PT_TOP,
 	};
@@ -148,11 +148,16 @@ namespace NetWork {
 
 		TerminalType currentTType();
 		ProtoType currentProtoType();
+
+		void updateProtoType(ProtoType type);
+		void processLinkProto(int protoId);
 		
 	private:
 		void sendNetData();
 		void readNetData();
 		void linkFunc(int sockfd, short events);
+		void processReqLinkData();
+		void processAckLinkData();
 		
 		DataParser m_parser;
 		std::string m_host;
@@ -214,9 +219,10 @@ namespace NetWork {
 	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, int verify, void *data, size_t size);
-    int packData(const void *data, int uuid, void **res, ProtoType ptype); //res需要自行释放
+    int packData(const void *data, int uuid, void **res, ProtoType ptype, int size = 0); //res需要自行释放 当uuid 为0或1（流数据时）size为数据长度，其他情况不需要设置
     int unpackData(const char *src, int size, ProtoType ptype);
 	void bindConnectFunc(const std::function<void(NetLink *)> &func);
+	void bindLinkProtoFunc(const std::function<void(NetLink *, int protoId)> &func);
 
 }
 

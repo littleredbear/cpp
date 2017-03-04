@@ -7,11 +7,11 @@ protos=`ls $dir`
 
 for proto in $protos
 do
-	if [[ $ptoro == *.cc ]]
+	if [[ $proto == *cc || $proto == 'lrbLinkProto.h' ]]
 	then
 		continue
 	fi
-
+	
 	path=${dir}${proto}
 
 mname=${proto%.h}
