@@ -20,6 +20,7 @@ namespace NetWork {
                 
                 void packData(void *data, int size, bool verify = false);
                 void setDoneValue(int val, int verify, NetLink *link);
+				void sendData(int verify, int linkId);
 
                 void bindLastPacker(DataPacker *packer);
                 void bindNextPacker(DataPacker *packer);
@@ -83,11 +84,6 @@ namespace NetWork {
                 int m_frameLen;
                 int m_verify;
         };
-
-        int packData(const char *src, int uuid, void **res); //res需要自行释放
-        int unpackData(const char *src, int size);
-        void bindReqFunc(int uuid, const std::function<void(DataPacker *)> &func);
-        void bindAckFunc(int verify, const std::function<void()> &func);
 
 //-------------------------------Net Data----------------------------------
 
@@ -218,10 +214,8 @@ namespace NetWork {
 	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, int verify, void *data, size_t size);
-        int packData(const char *src, int uuid, void **res, ProtoType ptype); //res需要自行释放
-        int unpackData(const char *src, int size, ProtoType ptype);
-        void bindProtoReqFunc(int protoId, const std::function<void(DataPacker *)> &func);
-        void bindProtoAckFunc(AckFuncType ackType, const std::function<void()> &func);
+    int packData(const void *data, int uuid, void **res, ProtoType ptype); //res需要自行释放
+    int unpackData(const char *src, int size, ProtoType ptype);
 	void bindConnectFunc(const std::function<void(NetLink *)> &func);
 
 }

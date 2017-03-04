@@ -14,6 +14,11 @@ namespace NetWork {
 }
 
 namespace GameProto {
+
+	enum class AckFuncType {
+		AFT_BOT,
+		AFT_TOP,
+	};
 	
 	struct ReqStreamData {
 		void *data;
@@ -42,7 +47,7 @@ namespace GameProto {
 	};
 
 	void bindReqFunc(int protoId, const std::function<void(lrb::NetWork::DataPacker *)> &func);
-	void bindAckFunc(int ackId, const std::function<void()> &func);
+	void bindAckFunc(AckFuncType acktype, const std::function<void()> &func);
 
 }
 

@@ -1,10 +1,21 @@
-#ifndef _LRB_VERIFY_PROT_H
+#ifndef _LRB_VERIFY_PROTO_H
 #define _LRB_VERIFY_PROTO_H
 
+#include <string>
+#include <functional>
 
 namespace lrb {
 
+namespace NetWork {
+	class DataPacker;
+}
+
 namespace VerifyProto {
+
+	enum class AckFuncType {
+		AFT_BOT,
+		AFT_TOP,
+	};
 
 	struct ReqStreamData {
 		void *data;
@@ -21,6 +32,9 @@ namespace VerifyProto {
 	struct AckVerifyData {
 		uint32_t verify;
 	};
+
+	void bindReqFunc(int protoId, const std::function<void(lrb::NetWork::DataPacker *)> &func);
+	void bindAckFunc(AckFuncType acktype, const std::function<void()> &func);
 
 }
 

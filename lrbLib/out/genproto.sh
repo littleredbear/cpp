@@ -7,7 +7,7 @@ protos=`ls $dir`
 
 for proto in $protos
 do
-	if [[ $ptoro == *.cc || $proto == 'lrbProtocol.h' ]]
+	if [[ $ptoro == *.cc ]]
 	then
 		continue
 	fi
@@ -44,7 +44,7 @@ done
 reqptr=${reqptr}'};\n'
 ackptr=${ackptr}'};\n'
 
-output='#include "'$proto'"\n\n\n\n#ifdef LRB_'$mname'_SERVER\n'${reqtxt}${reqptr}'#else\n'${acktxt}${ackptr}'#endif\n\n'
+output='#include "'$proto'"\n\n\nusing namespace lrb::'$mname';\n\n#ifdef LRB_'$mname'_SERVER\n'${reqtxt}${reqptr}'std::function<void(lrb::NetWork::DataPacker *)> g_lrb_'$mname'_reqFuncs['$protonum'];\n#else\n'${acktxt}${ackptr}'std::function<void()> g_lrb_'$mname'_ackFuncs[(int)AckFuncType::AFT_TOP];\n#endif\n\n'
 
 txt=`sed -n '/struct/,/};/{s/struct \([^{]*\) {//;p;}' $path`
 
@@ -117,8 +117,7 @@ do
 done
 
 confs=${confs%\{};
-confs=${confs}'};\n\n'
-confs=${confs}'int g_lrb_'$mname'_protoNum = '$protonum';\n\n'
+confs=${confs}'};\n\nnamespace lrb {\n\nnamespace '$mname' {\n\nvoid *getUnpackDest(int protoId)\n{\n\tif (protoId < 0 || protoId >= '$protonum')\n\t\treturn NULL;\n\n#ifdef LRB_'$mname'_SERVER\n\tif (protoId & 1)\n#else\n\tif (!(protoId & 1))\n#endif\n\t\treturn NULL;\n\n\treturn g_lrb_'$mname'_ptrs[protoId >> 1];\n}\n\nshort *getProtoConfs(int protoId)\n{\n\tif (protoId < 0 || protoId >= '$protonum')\n\t\treturn NULL;\n\n\treturn g_lrb_'$mname'_confs[protoId];\n}\n\nvoid execReqFunc(int protoId, lrb::NetWork::DataPacker *packer)\n{\n#ifdef LRB_'$mname'_SERVER\n\tif (protoId < 0 || protoId >= '$protonum' || (protoId & 1))\n\t\treturn;\n\n\tg_lrb_'$mname'_reqFuncs[protoId >> 1](packer);\n#endif\n}\n\nvoid execAckFunc()\n{\n#ifndef LRB_'$mname'_SERVER\n\tg_lrb_'$mname'_ackFuncs[g_lrb_'$mname'_AckVerifyData.verify]();\n#endif\n}\n\nvoid bindReqFunc(int protoId, const std::function<void(lrb::NetWork::DataPacker *)> &func)\n{\n#ifdef LRB_'$mname'_SERVER\n\tif (protoId < 0 || protoId >= '$protonum')\n\t\treturn;\n\n\tg_lrb_'$mname'_reqFuncs[protoId >> 1] = func;\n#endif\n}\n\nvoid bindAckFunc(AckFuncType acktype, const std::function<void()> &func)\n{\n#ifndef LRB_'$mname'_SERVER\n\tg_lrb_'$mname'_ackFuncs[(int)acktype] = func;\n#endif\n}\n\n}\n}\n'
 
 
 echo ${output}${confs} > ${dir}${proto/.h/.cc}

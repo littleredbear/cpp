@@ -17,14 +17,14 @@ namespace lrb {
 namespace VerifyProto {
 	void *getUnpackDest(int protoId);
 	short *getProtoConfs(int protoId);
-	void execReqFunc(int protoId);
+	void execReqFunc(int protoId, DataPacker *packer);
 	void execAckFunc();
 }
 
 namespace GameProto {
 	void *getUnpackDest(int protoId);
 	short *getProtoConfs(int protoId);
-	void execReqFunc(int protoId);
+	void execReqFunc(int protoId, DataPacker *packer);
 	void execAckFunc();
 }
 
@@ -54,7 +54,7 @@ namespace {
 		lrb::GameProto::getProtoConfs,
 	};
 
-	void (*s_lrb_proto_reqfuncs[])(int) = {
+	void (*s_lrb_proto_reqfuncs[])(int, DataPacker *) = {
 		lrb::VerifyProto::execReqFunc,
 		lrb::GameProto::execReqFunc,
 	};
@@ -323,6 +323,7 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 
 	int val = 0;
 	bool termserv = link->currentTType() == TerminalType::TT_SERVER;
+	DataPacker *packer = termserv ? s_center.getAvailablePacker() : NULL;
 	while(len > 0)
 	{
 		int plen;
@@ -330,18 +331,17 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 		frame += sizeof(int);
 		len -= sizeof(int);
 
-		int uuid = unpackData(frame, plen);
+		int uuid = unpackData(frame, plen, ptype);
 		frame += plen;
 		len -= plen;
 		
 		if (termserv)
-			s_lrb_proto_reqfuncs[(int)ptype](uuid);
+			s_lrb_proto_reqfuncs[(int)ptype](uuid, packer);
 		++val;
 	}
 	
 	if (termserv)
 	{
-		DataPacker *packer = s_center.getAvailablePacker();
 		packer->setDoneValue(val, verify, link);
 
 	} else 
@@ -788,17 +788,26 @@ void sendData(int uuid, int verify, void *data, size_t size)
 	RunLoop::runInLoop(std::bind(&NetLink::addNetData, &s_links[uuid], verify, data, size), RunLoopType::RLT_NET);
 }
 
-int packData(const char *src, int uuid, void **res)
+int packData(const void *data, int uuid, void **res, ProtoType ptype)
 {
+		if (ptype < ProtoType::PT_VERIFY || ptype >= ProtoType::PT_TOP)
+			return -1;
+
+		short *lrb_proto_confs = s_lrb_proto_confs[(int)ptype](uuid);
+		if (lrb_proto_confs == NULL)
+			return -1;
+
+
         int len = 5;
         for (int i=1;i<5;++i)
         {
-                if (g_lrb_protobuf_confs[uuid][i] > 0)
-                        len += (g_lrb_protobuf_confs[uuid][i] + 3);
+                if (lrb_proto_confs[i] > 0)
+                        len += (lrb_proto_confs[i] + 3);
         }
 
         int c = 0;
-        while(c < g_lrb_protobuf_confs[uuid][0])
+		const char *src = (const char *)data;
+        while(c < lrb_proto_confs[0])
         {
                 std::string *ptr = (std::string *)(src + c);
                 len += (ptr->size() + 1);
@@ -817,16 +826,16 @@ int packData(const char *src, int uuid, void **res)
         short offs[5] = {-1,-1,-1,-1,-1};
         for (int i=0;i<5;++i)
         {
-                if (g_lrb_protobuf_confs[uuid][i] > 0)
+                if (lrb_proto_confs[i] > 0)
                 {
                         offs[i] = off;
-                        off += g_lrb_protobuf_confs[uuid][i];
+                        off += lrb_proto_confs[i];
                 }
         }
 
         for (char i=1;i<5;++i)
         {
-                short vlen = g_lrb_protobuf_confs[uuid][i];
+                short vlen = lrb_proto_confs[i];
                 if (vlen > 0)
                 {
                         *ptr = i;
@@ -842,7 +851,7 @@ int packData(const char *src, int uuid, void **res)
 
         ptr += sizeof(char);
         c = 0;
-        while(c < g_lrb_protobuf_confs[uuid][0])
+        while(c < lrb_proto_confs[0])
         {
                 std::string *sptr = (std::string *)(src + c);
                 memcpy(ptr, sptr->c_str(), sptr->size());
@@ -854,27 +863,36 @@ int packData(const char *src, int uuid, void **res)
         return len;
 }
 
-int unpackData(const char *src, int size)
+int unpackData(const char *src, int size, ProtoType ptype)
 {
-        int uuid;
+	if (ptype < ProtoType::PT_VERIFY || ptype >= ProtoType::PT_TOP)
+		return -1;
+	
+		int uuid;
         memcpy(&uuid, src, sizeof(int));
         src += sizeof(int);
         size -= sizeof(int);
+
+		short *lrb_proto_confs = s_lrb_proto_confs[(int)ptype](uuid);
+		if (lrb_proto_confs == NULL)
+			return -1;
+
+		char *dst = (char *)s_lrb_proto_unpackdests[(int)ptype](uuid);
+		if (dst == NULL)
+			return -1;
 
         int off = 0;
         short offs[5] = {-1,-1,-1,-1,-1};
         for (int i=0;i<5;++i)
         {
-                if (g_lrb_protobuf_confs[uuid][i] > 0)
+                if (lrb_proto_confs[i] > 0)
                 {
                         offs[i] = off;
-                        off += g_lrb_protobuf_confs[uuid][i];
+                        off += lrb_proto_confs[i];
                 }
         }
 
-        char *dst = (char *)g_lrb_protobuf_ptrs[uuid >> 1];
-        memset(dst + g_lrb_protobuf_confs[uuid][0], 0, off-g_lrb_protobuf_confs[uuid][0]);
-
+        memset(dst + lrb_proto_confs[0], 0, off-lrb_proto_confs[0]);
         while(size > 0)
         {
                 char type = *(char *)src;
@@ -884,7 +902,7 @@ int unpackData(const char *src, int size)
                 if (type == 0)
                 {
                         int c = 0;
-                        while(c < g_lrb_protobuf_confs[uuid][0])
+                        while(c < lrb_proto_confs[0])
                         {
                                 std::string *ptr = (std::string *)(dst + c);
                                 if (size > 0)
@@ -907,7 +925,7 @@ int unpackData(const char *src, int size)
                         size -= sizeof(short);
 
                         if (offs[type] != -1)
-                                memcpy(dst + offs[type], src, std::min(len, g_lrb_protobuf_confs[uuid][type]));
+                                memcpy(dst + offs[type], src, std::min(len, lrb_proto_confs[type]));
 
                         src += len;
                         size -= len;
@@ -915,16 +933,6 @@ int unpackData(const char *src, int size)
         }
 
         return uuid;
-}
-
-void bindReqFunc(int uuid, const std::function<void(DataPacker *)> &func)
-{
-        s_reqFuncs[uuid >> 1] = func;
-}
-
-void bindAckFunc(int verify, const std::function<void()> &func)
-{
-        s_ackFuncs[verify] = func;
 }
 
 void bindConnectFunc(const std::function<void(NetLink *)> &func)
