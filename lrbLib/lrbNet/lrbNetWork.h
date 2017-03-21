@@ -222,6 +222,7 @@ namespace NetWork {
     int unpackData(const char *src, int size, ProtoType ptype);
 	void bindConnectFunc(const std::function<void(NetLink *)> &func);
 	void bindLinkProtoFunc(const std::function<void(NetLink *, int protoId)> &func);
+	void bindFinalCheckFunc(const std::function<void()> &func);
 
 }
 

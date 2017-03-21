@@ -37,13 +37,29 @@ namespace GameProto {
 	};
 
 	struct ReqRoleInfo {
-		std::string name;
 		uint32_t roleId;
 	};
 
 	struct AckRoleInfo {
-		std::string name;
 		uint32_t roleId;
+	};
+
+	struct ReqRoleName {
+		std::string name;
+	};
+	
+	struct AckRoleName {
+		std::sring name;
+	};
+
+	struct ReqRolePos {
+		uint32_t posx;
+		uint32_t posy;
+	};
+	
+	struct AckRolePos {
+		uint32_t posx;
+		uint32_t posy;
 	};
 
 	void bindReqFunc(int protoId, const std::function<void(lrb::NetWork::DataPacker *)> &func);

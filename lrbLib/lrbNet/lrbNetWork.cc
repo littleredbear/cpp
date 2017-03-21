@@ -49,6 +49,7 @@ namespace {
 
 	std::function<void(NetLink *)> s_linkConnectFunc;
 	std::function<void(NetLink *, int)> s_lrb_linkProtoFunc;
+	std::function<void()> s_lrb_finalCheckFunc;
 
 	void *(*s_lrb_proto_unpackdests[])(int) = {
 		lrb::LinkProto::getUnpackDest,
@@ -347,6 +348,7 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 
 	if (ttype == TerminalType::TT_SERVER)
 	{
+		RunLoop::runInLoop(s_lrb_finalCheckFunc, RunLoopType::RLT_LOGIC);
 		RunLoop::runInLoop(std::bind(&DataPacker::setDoneValue, packer, val, verify, link), RunLoopType::RLT_LOGIC);
 	} else if (ttype == TerminalType::TT_CLIENT)
 	{
@@ -910,7 +912,7 @@ int packData(const void *data, int uuid, void **res, ProtoType ptype, int size)
                 }
         }
 
-        ptr += sizeof(char);
+        ptr += sizeof(char); // 字符串类型0
         c = 0;
         while(c < lrb_proto_confs[0])
         {
@@ -1019,6 +1021,11 @@ void bindConnectFunc(const std::function<void(NetLink *)> &func)
 void bindLinkProtoFunc(const std::function<void(NetLink *, int protoId)> &func)
 {
 	s_lrb_linkProtoFunc = func;
+}
+
+void bindFinalCheckFunc(const std::function<void()> &func)
+{
+	s_lrb_finalCheckFunc = func;
 }
 
 }
