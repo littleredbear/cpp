@@ -11,6 +11,12 @@ namespace NetWork {
 
 	class NetLink;
 
+	enum class ProtoType {
+		PT_LINK,
+		PT_GAME,
+		PT_TOP,
+	};
+
 //-----------------------------------------Data Packer-------------------------------
         
         class DataPacker {
@@ -18,7 +24,7 @@ namespace NetWork {
                 DataPacker();
                 ~DataPacker();
                 
-                void packData(void *data, int size);
+                void packData(void *data, int protoId, ProtoType type, int size = 0);
                 void setDoneValue(int val, int verify, NetLink *link);
 				void sendData(int verify, int linkId);
 
@@ -99,11 +105,6 @@ namespace NetWork {
 		TT_SERVER,
 	};
 
-	enum class ProtoType {
-		PT_LINK,
-		PT_GAME,
-		PT_TOP,
-	};
 
 	class NetData {
 	public:
@@ -218,8 +219,8 @@ namespace NetWork {
 	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, int verify, void *data, size_t size);
-    int packData(const void *data, int uuid, void **res, ProtoType ptype, int size = 0); //res需要自行释放 当uuid 为0或1（流数据时）size为数据长度，其他情况不需要设置
-    int unpackData(const char *src, int size, ProtoType ptype);
+    	int packData(const void *data, int uuid, void **res, ProtoType ptype, int size = 0); //res需要自行释放 当uuid 为0或1（流数据时）size为数据长度，其他情况不需要设置
+    	int unpackData(const char *src, int size, ProtoType ptype);
 	void bindConnectFunc(const std::function<void(NetLink *)> &func);
 	void bindLinkProtoFunc(const std::function<void(NetLink *, int protoId)> &func);
 	void bindFinalCheckFunc(const std::function<void()> &func);

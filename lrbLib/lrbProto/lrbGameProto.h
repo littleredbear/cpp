@@ -49,7 +49,7 @@ namespace GameProto {
 	};
 	
 	struct AckRoleName {
-		std::sring name;
+		std::string name;
 	};
 
 	struct ReqRolePos {

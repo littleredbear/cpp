@@ -89,12 +89,19 @@ DataPacker::~DataPacker()
 
 }
 
-void DataPacker::packData(void *data, int size)
+void DataPacker::packData(void *data, int protoId, ProtoType type, int size)
 {
-        m_datas.push_back(data);
-        m_lens.push_back(size);
-
         ++ m_curVal;
+
+	if (data == NULL)
+		return;
+		
+	void *res;
+	int ret = ::packData(data, protoId, &res, type, size);
+
+        m_datas.push_back(res);
+        m_lens.push_back(ret);
+
         if (m_doneVal != 0 && m_doneVal == m_curVal)
         {
                 sendData();

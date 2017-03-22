@@ -45,7 +45,7 @@ endef
 
 .PHONY : clean
 clean :
-	-rm -rf *.o *.d.* *.d *.so
+	-rm -rf *.o *.d.* *.d *.so $(target)
 
 -include  $(addsuffix .d, $(file_names))
 

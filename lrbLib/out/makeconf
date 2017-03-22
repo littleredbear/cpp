@@ -1,9 +1,9 @@
 
-target:=liblrb.so
+target:=liblrbserver.so
 cc:=g++
 cflags:=-std=c++11 -DLRB_GameProto_SERVER
 lflags:=-shared -fpic
 src_pattern:="*.c*"
-projdir:=".."
+projdir:=..
 include_dirs:=
 src_dirs:=
