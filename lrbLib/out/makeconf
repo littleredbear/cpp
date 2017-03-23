@@ -1,8 +1,18 @@
 
+ifndef LRBAPPCLIENT
 target:=liblrbserver.so
-cc:=g++
 cflags:=-std=c++11 -DLRB_GameProto_SERVER
 lflags:=-shared -fpic
+
+else
+
+target:=liblrbclient.dylib
+cflags:=-std=c++11
+lflags:=-dynamiclib -current_version 1.0
+
+endif
+
+cc:=g++
 src_pattern:="*.c*"
 projdir:=..
 include_dirs:=

@@ -125,11 +125,7 @@ void LogManager::initLogFile()
 	if (m_fd != -1)
 		close(m_fd);
 
-	timeval tv;
-	gettimeofday(&tv, NULL);
-	char buff[128] = {0};
-	snprintf(buff, 128, "%s-%ld.log", RunLoop::loopName(), tv.tv_sec);
-	m_fd = open(buff, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 0644);
+	m_fd = open(logPath().c_str(), O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 0644);
 
 	if (m_addCache == NULL && m_logCache == NULL)
 	{
@@ -207,6 +203,15 @@ void LogManager::toFlush()
 		if (cache == m_logCache)
 			break;
 	}
+}
+
+std::string LogManager::logPath()
+{
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	char buff[128] = {0};
+	snprintf(buff, 128, "%s-%ld.log", RunLoop::loopName(), tv.tv_sec);
+	return buff;
 }
 
 

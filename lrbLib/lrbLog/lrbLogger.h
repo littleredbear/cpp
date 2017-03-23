@@ -2,6 +2,7 @@
 #define _LRB_LOGGER_H
 
 #include "lrbRunLoop.h"
+#include <string>
 
 namespace lrb {
 
@@ -53,6 +54,7 @@ namespace lrb {
 		void toFlush();
 
 	private:
+		std::string logPath();
 		LogCache *m_addCache;
 		LogCache *m_logCache;
 		int m_fd;

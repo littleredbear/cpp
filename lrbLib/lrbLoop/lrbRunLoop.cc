@@ -18,6 +18,15 @@ namespace {
 	__thread RunLoopType s_loopType = RunLoopType::RLT_LOGIC;
 }
 
+void RunLoop::initRunLoop()
+{
+	for (int i = 0; i < (int)RunLoopType::RLT_TOP - 1; ++i)
+	{
+		startNewLoop((RunLoopType)i);
+	}
+	
+	startTimerLoop();
+}
 
 void RunLoop::initRunLoop(const std::function<void()> &func)
 {
@@ -62,8 +71,8 @@ void RunLoop::runInLoop(const std::function<void()> &func, RunLoopType type, con
 		s_timerManager[(int)type].addTask(func, tv);
 		s_poller[(int)RunLoopType::RLT_TIMER].notify();
 	} else {
-		s_taskManager[(int)type][(int)s_loopType].addTask(func);
-		if (s_loopType != type)
+		s_taskManager[(int)type][(int)loopType()].addTask(func);
+		if (loopType() != type)
 			s_poller[(int)type].notify();
 	}
 }
@@ -75,7 +84,7 @@ RunLoopType RunLoop::loopType()
 
 const char *RunLoop::loopName()
 {
-	switch(s_loopType)
+	switch(loopType())
 	{
 	case RunLoopType::RLT_LOGIC:
 		return "LogicLoop";
@@ -104,17 +113,22 @@ const char *RunLoop::loopName()
 
 int RunLoop::addPollFd(int fd, short events, const std::function<void(int, short)> &func)
 {
-	return s_poller[(int)s_loopType].addPollFd(fd, events, func);
+	return s_poller[(int)loopType()].addPollFd(fd, events, func);
 }
 
 void RunLoop::updatePollFd(int handler, short events, const std::function<void(int, short)> &func)
 {
-	s_poller[(int)s_loopType].updatePollFd(handler, events, func);
+	s_poller[(int)loopType()].updatePollFd(handler, events, func);
 }
 
 void RunLoop::removePollFd(int handler)
 {
-	s_poller[(int)s_loopType].removePollFd(handler);
+	s_poller[(int)loopType()].removePollFd(handler);
+}
+
+void RunLoop::setLoopType(RunLoopType type)
+{
+	s_loopType = type;
 }
 
 bool RunLoop::execTask()
@@ -122,7 +136,7 @@ bool RunLoop::execTask()
 	bool ret = false;
 	
 	for (int t = 0; t < (int)RunLoopType::RLT_TOP; ++t)
-		ret = s_taskManager[(int)s_loopType][t].execTask() || ret;
+		ret = s_taskManager[(int)loopType()][t].execTask() || ret;
 	
 	return ret;
 }
@@ -130,7 +144,7 @@ bool RunLoop::execTask()
 
 void RunLoop::timerFunc()
 {
-	s_loopType = RunLoopType::RLT_TIMER;
+	setLoopType(RunLoopType::RLT_TIMER);
 
 	do 
 	{
@@ -168,7 +182,7 @@ void RunLoop::timerFunc()
 				continue;
 		}
 		
-		s_poller[(int)s_loopType].poll(timeout);
+		s_poller[(int)loopType()].poll(timeout);
 		
 	} while(1);
 }
@@ -187,7 +201,7 @@ void RunLoop::timerFunc()
 
 void RunLoop::loopFunc(RunLoopType type)
 {
-	s_loopType = type;
+	setLoopType(type);
 
 	Logger::initLogger();
 
@@ -195,7 +209,7 @@ void RunLoop::loopFunc(RunLoopType type)
 	{
 		while(execTask());
 		
-		s_poller[(int)s_loopType].poll();
+		s_poller[(int)loopType()].poll();
 		
 	} while(1);
 }
@@ -221,10 +235,10 @@ void RunLoop::startTimerLoop()
 
 void RunLoop::startLogicLoop(const std::function<void()> &func)
 {
-	s_loopType = RunLoopType::RLT_LOGIC;
+	setLoopType(RunLoopType::RLT_LOGIC);
 	
-	runInLoop(func, s_loopType);
-	loopFunc(s_loopType);
+	runInLoop(func, RunLoopType::RLT_LOGIC);
+	loopFunc(RunLoopType::RLT_LOGIC);
 }
 
 

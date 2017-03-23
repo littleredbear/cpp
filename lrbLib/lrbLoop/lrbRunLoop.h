@@ -18,6 +18,7 @@ namespace lrb {
 
 	class RunLoop {
 	public:
+		static void initRunLoop();
 		static void initRunLoop(const std::function<void()> &func);
 		// 不要在Net, Log 和 Timer 执行回调。因为有特定的调用接口
 		static void runInLoop(const std::function<void()> &func, RunLoopType type, const timeval *tv = NULL);
@@ -33,7 +34,7 @@ namespace lrb {
 //		~RunLoop();
 		
 	private:
-	
+		static void setLoopType(RunLoopType type);
 		static bool execTask();
 	
 		static void timerFunc();
