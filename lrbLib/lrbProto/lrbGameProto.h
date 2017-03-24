@@ -20,7 +20,7 @@ namespace GameProto {
 		AFT_TOP,
 	};
 	
-	struct ReqStreamData {
+	struct    ReqStreamData    {
 		void *data;
 	};
 	

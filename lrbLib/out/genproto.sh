@@ -7,7 +7,7 @@ protos=`ls $dir`
 
 for proto in $protos
 do
-	if [[ $proto == *cc || $proto == 'lrbLinkProto.h' ]]
+	if [[ $proto == *cc || $proto == 'lrbLinkProto.h' || $proto == *Func.h ]]
 	then
 		continue
 	fi
@@ -121,6 +121,8 @@ confs=${confs}'};\n\nnamespace lrb {\n\nnamespace '$mname' {\n\nvoid *getUnpackD
 
 
 echo ${output}${confs} > ${dir}${proto/.h/.cc}
+
+. genfunc.sh $path
 
 done
 

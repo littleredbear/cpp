@@ -13,7 +13,7 @@ namespace NetWork {
 
 	enum class ProtoType {
 		PT_LINK,
-		PT_GAME,
+		PT_GameProto,
 		PT_TOP,
 	};
 
@@ -216,7 +216,7 @@ namespace NetWork {
 	};
 
 
-	void connectServer(const std::string &hostname, const std::string &service, int uuid, int protoId);
+	void connectServer(const std::string &hostname, const std::string &service, int uuid);
 	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, void *data, size_t size);

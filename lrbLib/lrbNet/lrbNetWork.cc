@@ -642,6 +642,10 @@ void NetLink::processLinkProto(int protoId)
 		default:
 			break;
 	}
+
+	if (s_lrb_linkProtoFunc)
+		RunLoop::runInLoop(std::bind(s_lrb_linkProtoFunc, this, protoId), RunLoopType::RLT_LOGIC);
+
 }
 
 void NetLink::sendNetData()
@@ -700,14 +704,14 @@ void NetLink::linkFunc(int sockfd, short events)
 
 void NetLink::processReqLinkData()
 {
-	ProtoType ptype = (ProtoType)g_lrb_LinkProto_ReqLinkData.protoId;
+	ProtoType ptype = (ProtoType)g_lrb_LinkProto_ReqLinkData.protoType;
 	if (ptype <= ProtoType::PT_LINK || ptype >= ProtoType::PT_TOP)
 		ptype = ProtoType::PT_LINK;
 
 	m_protoType = ptype;
 	
 	lrb::LinkProto::AckLinkData ldata;
-	ldata.protoId = (int)ptype;
+	ldata.protoType = (int)ptype;
 
 	void *res;
 	int ret = packData(&ldata, 3, &res, ProtoType::PT_LINK);
@@ -719,14 +723,12 @@ void NetLink::processReqLinkData()
 
 void NetLink::processAckLinkData()
 {
-	ProtoType ptype = (ProtoType)g_lrb_LinkProto_AckLinkData.protoId;
+	ProtoType ptype = (ProtoType)g_lrb_LinkProto_AckLinkData.protoType;
 	if (ptype <= ProtoType::PT_LINK || ptype >= ProtoType::PT_TOP)
 		ptype = ProtoType::PT_LINK;
 
 	m_protoType = ptype;
 
-	if (s_lrb_linkProtoFunc)
-		s_lrb_linkProtoFunc(this, 3);
 }
 
 //----------------------------------------------Link Manager------------------------------
@@ -844,7 +846,7 @@ namespace lrb {
 
 namespace NetWork {
 
-void connectServer(const std::string &hostname, const std::string &service, int uuid, int protoId)
+void connectServer(const std::string &hostname, const std::string &service, int uuid)
 {
 	RunLoop::runInLoop(std::bind(&NetLink::connectServer, &s_links[uuid], hostname, service), RunLoopType::RLT_NET);
 }

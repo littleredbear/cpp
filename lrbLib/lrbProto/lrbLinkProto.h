@@ -23,11 +23,11 @@ namespace LinkProto {
 	};
 
 	struct ReqLinkData {
-		uint32_t protoId;
+		int32_t protoType;
 	};
 	
 	struct AckLinkData {
-		uint32_t protoId;
+		int32_t protoType;
 	};
 
 
