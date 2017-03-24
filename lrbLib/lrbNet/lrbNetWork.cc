@@ -120,6 +120,14 @@ void DataPacker::setDoneValue(int val, int verify, NetLink *link)
                 m_doneVal = val;
 }
 
+void DataPacker::sendData(int linkId)
+{
+	void *data;
+	int ret = getData(&data);
+
+	::sendData(linkId, data, ret);
+}
+
 void DataPacker::bindLastPacker(DataPacker *packer)
 {
         m_last = packer;
@@ -146,7 +154,7 @@ DataPacker *DataPacker::nextPacker()
         return m_next;
 }
 
-void DataPacker::sendData()
+int DataPacker::getData(void **res)
 {
         int size = 0;
         for (auto len : m_lens)
@@ -167,10 +175,19 @@ void DataPacker::sendData()
                 memcpy(ptr, m_datas[i], len);
                 ptr += len;
 		
-				free(m_datas[i]);
+		free(m_datas[i]);
         }
+	
+	*res = data;
+	return size + sizeof(int);
+}
 
-        RunLoop::runInLoop(std::bind(&NetLink::addNetData, m_link, m_verify, data, size+sizeof(int)), RunLoopType::RLT_NET);
+void DataPacker::sendData()
+{
+	void *data;
+	int ret = getData(&data);
+
+        RunLoop::runInLoop(std::bind(&NetLink::addNetData, m_link, m_verify, data, ret), RunLoopType::RLT_NET);
         reusePacker();
 }
 
@@ -471,6 +488,9 @@ NetLink::~NetLink()
 
 void NetLink::addNetData(int verify, void *data, size_t size)
 {
+	if (verify == -1)
+		verify = m_verify;
+
 	if (m_state == LinkState::LS_CLOSED || verify != m_verify)
 	{
 		free(data);
@@ -839,9 +859,9 @@ void disConnect(int uuid)
 	RunLoop::runInLoop(std::bind(&NetLink::disConnect, &s_links[uuid]), RunLoopType::RLT_NET);
 }
 
-void sendData(int uuid, int verify, void *data, size_t size)
+void sendData(int uuid, void *data, size_t size)
 {
-	RunLoop::runInLoop(std::bind(&NetLink::addNetData, &s_links[uuid], verify, data, size), RunLoopType::RLT_NET);
+	RunLoop::runInLoop(std::bind(&NetLink::addNetData, &s_links[uuid], -1, data, size), RunLoopType::RLT_NET);
 }
 
 int packData(const void *data, int uuid, void **res, ProtoType ptype, int size)

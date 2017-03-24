@@ -26,7 +26,7 @@ namespace NetWork {
                 
                 void packData(void *data, int protoId, ProtoType type, int size = 0);
                 void setDoneValue(int val, int verify, NetLink *link);
-				void sendData(int verify, int linkId);
+		void sendData(int linkId);
 
                 void bindLastPacker(DataPacker *packer);
                 void bindNextPacker(DataPacker *packer);
@@ -35,6 +35,7 @@ namespace NetWork {
                 DataPacker *nextPacker();
 
         private:
+		int getData(void **res);
                 void sendData();
                 void reusePacker();
 
@@ -218,7 +219,7 @@ namespace NetWork {
 	void connectServer(const std::string &hostname, const std::string &service, int uuid, int protoId);
 	void startService(short service);
 	void disConnect(int uuid);
-	void sendData(int uuid, int verify, void *data, size_t size);
+	void sendData(int uuid, void *data, size_t size);
     	int packData(const void *data, int uuid, void **res, ProtoType ptype, int size = 0); //res需要自行释放 当uuid 为0或1（流数据时）size为数据长度，其他情况不需要设置
     	int unpackData(const char *src, int size, ProtoType ptype);
 	void bindConnectFunc(const std::function<void(NetLink *)> &func);
