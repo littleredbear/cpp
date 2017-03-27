@@ -128,32 +128,6 @@ void DataPacker::sendData(int linkId)
 	::sendData(linkId, data, ret);
 }
 
-void DataPacker::bindLastPacker(DataPacker *packer)
-{
-        m_last = packer;
-}
-
-void DataPacker::bindNextPacker(DataPacker *packer)
-{
-        m_next = packer;
-}
-
-DataPacker *DataPacker::lastPacker()
-{
-        if (m_last == NULL)
-                return this - 1;
-
-        return m_last;
-}
-
-DataPacker *DataPacker::nextPacker()
-{
-        if (m_next == NULL)
-                return this + 1;
-
-        return m_next;
-}
-
 int DataPacker::getData(void **res)
 {
         int size = 0;
@@ -180,6 +154,32 @@ int DataPacker::getData(void **res)
 	
 	*res = data;
 	return size + sizeof(int);
+}
+
+void DataPacker::bindLastPacker(DataPacker *packer)
+{
+        m_last = packer;
+}
+
+void DataPacker::bindNextPacker(DataPacker *packer)
+{
+        m_next = packer;
+}
+
+DataPacker *DataPacker::lastPacker()
+{
+        if (m_last == NULL)
+                return this - 1;
+
+        return m_last;
+}
+
+DataPacker *DataPacker::nextPacker()
+{
+        if (m_next == NULL)
+                return this + 1;
+
+        return m_next;
 }
 
 void DataPacker::sendData()
@@ -531,6 +531,7 @@ void NetLink::disConnect()
 	RunLoop::removePollFd(m_handler);
 	close(m_fd);
 	m_ttype = TerminalType::TT_NONE;
+	setProtoType(ProtoType::PT_LINK);
 	m_state = LinkState::LS_CLOSED;
 
 	s_manager.reuseNetLink(this);
@@ -627,6 +628,11 @@ ProtoType NetLink::currentProtoType()
 	return m_protoType;
 }
 
+void NetLink::setProtoType(ProtoType type)
+{
+	m_protoType = type;
+}
+
 void NetLink::processLinkProto(int protoId)
 {
 	switch (protoId)
@@ -708,15 +714,16 @@ void NetLink::processReqLinkData()
 	if (ptype <= ProtoType::PT_LINK || ptype >= ProtoType::PT_TOP)
 		ptype = ProtoType::PT_LINK;
 
-	m_protoType = ptype;
+	setProtoType(ptype);
 	
 	lrb::LinkProto::AckLinkData ldata;
 	ldata.protoType = (int)ptype;
 
+	DataPacker packer;
+	packer.packData(&ldata, 3, ProtoType::PT_LINK);
+
 	void *res;
-	int ret = packData(&ldata, 3, &res, ProtoType::PT_LINK);
-	if (ret == -1)
-		return;
+	int ret = packer.getData(&res);
 	
 	RunLoop::runInLoop(std::bind(&NetLink::addNetData, this, m_verify, res, ret), RunLoopType::RLT_NET);
 }
@@ -727,7 +734,7 @@ void NetLink::processAckLinkData()
 	if (ptype <= ProtoType::PT_LINK || ptype >= ProtoType::PT_TOP)
 		ptype = ProtoType::PT_LINK;
 
-	m_protoType = ptype;
+	setProtoType(ptype);
 
 }
 

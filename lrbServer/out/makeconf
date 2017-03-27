@@ -2,7 +2,7 @@
 target:=lrbserver
 cc:=g++
 cflags:=-std=c++11
-lflags:=-llrbserver -L.
+lflags:=-llrbserver -L../../lrbLib/out
 src_pattern:="*.c*"
 projdir:=.. ../../lrbLib
 include_dirs:=

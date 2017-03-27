@@ -27,6 +27,7 @@ namespace NetWork {
                 void packData(void *data, int protoId, ProtoType type, int size = 0);
                 void setDoneValue(int val, int verify, NetLink *link);
 		void sendData(int linkId);
+		int getData(void **res);
 
                 void bindLastPacker(DataPacker *packer);
                 void bindNextPacker(DataPacker *packer);
@@ -35,7 +36,6 @@ namespace NetWork {
                 DataPacker *nextPacker();
 
         private:
-		int getData(void **res);
                 void sendData();
                 void reusePacker();
 
@@ -150,6 +150,7 @@ namespace NetWork {
 
 		TerminalType currentTType();
 		ProtoType currentProtoType();
+		void setProtoType(ProtoType type);
 
 		void processLinkProto(int protoId);
 		

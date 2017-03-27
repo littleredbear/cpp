@@ -5,7 +5,7 @@
 
 void gameServerStart()
 {
-	lrb::server::DataCache::getInstance()->initDataCache();
+	lrb::server::data::DataCache::getInstance()->initDataCache();
 	lrb::server::NetWork::initNetWork();
 }
 
