@@ -14,12 +14,12 @@ namespace LinkProto {
 
 	struct ReqStreamData {
 		void *data;
-		uint32_t size;
+		int32_t size;
 	};
 
 	struct AckStreamData {
 		void *data;
-		uint32_t size;
+		int32_t size;
 	};
 
 	struct ReqLinkData {

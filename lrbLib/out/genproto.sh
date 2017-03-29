@@ -87,7 +87,7 @@ do
 		tp=1
 	elif [[ $t == *int32_t || $t == 'float' ]]
 	then
-		if [[ $t == 2 ]]
+		if [[ $tp == 2 ]]
 		then
 			off2=$(($off2+4))
 		else
@@ -96,7 +96,7 @@ do
 		tp=2
 	elif [[ $t == *int16_t ]]
 	then
-		if [[ $t == 3 ]]
+		if [[ $tp == 3 ]]
 		then
 			off3=$(($off3+2))
 		else
@@ -105,7 +105,7 @@ do
 		tp=3
 	elif [[ $t == *int8_t ]]
 	then
-		if [[ $t == 4 ]]
+		if [[ $tp == 4 ]]
 		then
 			off4=$(($off4+1))
 		else

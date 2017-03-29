@@ -6,6 +6,7 @@
 
 //整形必须用int32_t
 //结构排序string,8,4,2,1字节
+//StreamData结构必须有，且放在开始
 
 namespace lrb {
 
@@ -20,12 +21,14 @@ namespace GameProto {
 		AFT_TOP,
 	};
 	
-	struct    ReqStreamData    {
+	struct ReqStreamData {
 		void *data;
+		int32_t size;
 	};
 	
 	struct AckStreamData {
 		void *data;
+		int32_t size;
 	};
 
 	struct ReqVerifyData {
@@ -34,6 +37,14 @@ namespace GameProto {
 		
 	struct AckVerifyData {
 		uint32_t verify;
+	};
+		
+	struct ReqErrorCode {
+		uint32_t errorCode;
+	};
+	
+	struct AckErrorCode {
+		uint32_t errorCode;
 	};
 
 	struct ReqRoleInfo {
@@ -60,6 +71,16 @@ namespace GameProto {
 	struct AckRolePos {
 		uint32_t posx;
 		uint32_t posy;
+	};
+		
+	struct ReqUseItem {
+		uint32_t itemId;
+		uint32_t userId;
+		uint32_t targetId;
+	};
+	
+	struct AckUseItem {
+
 	};
 
 	void bindReqFunc(int protoId, const std::function<void(lrb::NetWork::DataPacker *)> &func);

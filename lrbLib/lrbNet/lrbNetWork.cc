@@ -89,7 +89,7 @@ DataPacker::~DataPacker()
 
 }
 
-void DataPacker::packData(void *data, int protoId, ProtoType type, int size)
+void DataPacker::packData(void *data, int protoId, ProtoType type)
 {
         ++ m_curVal;
 
@@ -97,7 +97,10 @@ void DataPacker::packData(void *data, int protoId, ProtoType type, int size)
 		return;
 		
 	void *res;
-	int ret = ::packData(data, protoId, &res, type, size);
+	int ret = ::packData(data, protoId, &res, type);
+
+	if (ret == -1)
+		return;
 
         m_datas.push_back(res);
         m_lens.push_back(ret);
@@ -358,6 +361,9 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 		frame += plen;
 		len -= plen;
 		
+		if (uuid == -1)
+			continue;
+
 		if (ptype == ProtoType::PT_LINK)
 			link->processLinkProto(uuid);
 		else if (ttype == TerminalType::TT_SERVER)
@@ -873,24 +879,26 @@ void sendData(int uuid, void *data, size_t size)
 	RunLoop::runInLoop(std::bind(&NetLink::addNetData, &s_links[uuid], -1, data, size), RunLoopType::RLT_NET);
 }
 
-int packData(const void *data, int uuid, void **res, ProtoType ptype, int size)
+int packData(const void *data, int uuid, void **res, ProtoType ptype)
 {
 		if (ptype < ProtoType::PT_LINK || ptype >= ProtoType::PT_TOP)
 			return -1;
 
 		if (uuid == 0 || uuid == 1)
 		{
+			int32_t size;
+			memcpy(&size, (char *)data + sizeof(void *), sizeof(int32_t));
 			if (size <= 0)
 				return -1;
 
-			char *ptr = (char *)calloc(size + sizeof(int), sizeof(char));
+			char *ptr = (char *)calloc(size + sizeof(int32_t), sizeof(char));
 			if (ptr == NULL)
 				return -1;
 
-			memcpy(ptr, &size, sizeof(int));
-			memcpy(ptr + sizeof(int), data, size);
+			memcpy(ptr, &size, sizeof(int32_t));
+			memcpy(ptr + sizeof(int32_t), *(void **)data, size);
 
-			return size + sizeof(int);
+			return size + sizeof(int32_t);
 		}
 
 		short *lrb_proto_confs = s_lrb_proto_confs[(int)ptype](uuid);
