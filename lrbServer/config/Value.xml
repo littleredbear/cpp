@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <root version="1">
-	<feature id="1" name="1" comment="" type="1"/>
-	
+	<value id="1" content="" type="1" subId="1" comment="传送"/>
+
 </root>

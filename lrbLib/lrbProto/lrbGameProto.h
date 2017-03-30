@@ -18,6 +18,9 @@ namespace GameProto {
 
 	enum class AckFuncType {
 		AFT_BOT,
+		AFT_ROLEINFO,
+		AFT_ROLENAME,
+		AFT_ROLEPOS,
 		AFT_TOP,
 	};
 	
@@ -82,9 +85,6 @@ namespace GameProto {
 	struct AckUseItem {
 
 	};
-
-	void bindReqFunc(int protoId, const std::function<void(lrb::NetWork::DataPacker *)> &func);
-	void bindAckFunc(AckFuncType acktype, const std::function<void()> &func);
 
 }
 

@@ -17,10 +17,10 @@ extern ReqRolePos g_lrb_GameProto_ReqRolePos;
 
 void ModRoleInfo::initModRoleInfo()
 {
-	lrb::GameProto::bindReqFunc(2, std::bind(ModRoleInfo::reqVerifyDataFunc, std::placeholders::_1));
-	lrb::GameProto::bindReqFunc(4, std::bind(ModRoleInfo::reqRoleInfoFunc, std::placeholders::_1));
-	lrb::GameProto::bindReqFunc(6, std::bind(ModRoleInfo::reqRoleNameFunc, std::placeholders::_1));
-	lrb::GameProto::bindReqFunc(8, std::bind(ModRoleInfo::reqRolePosFunc, std::placeholders::_1));
+	lrb::GameProto::bindReqVerifyDataFunc(std::bind(ModRoleInfo::reqVerifyDataFunc, std::placeholders::_1));
+	lrb::GameProto::bindReqRoleInfoFunc(std::bind(ModRoleInfo::reqRoleInfoFunc, std::placeholders::_1));
+	lrb::GameProto::bindReqRoleNameFunc(std::bind(ModRoleInfo::reqRoleNameFunc, std::placeholders::_1));
+	lrb::GameProto::bindReqRolePosFunc(std::bind(ModRoleInfo::reqRolePosFunc, std::placeholders::_1));
 }
 
 void ModRoleInfo::reqVerifyDataFunc(lrb::NetWork::DataPacker *packer)

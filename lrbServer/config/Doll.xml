@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root version="1">
+	<doll id="1" name="" comment="" actpath="doll/assassin1a.png"/>
+	<doll id="2" name="" comment="" actpath="doll/assassin1b.png"/>
+
+</root>
