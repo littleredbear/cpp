@@ -86,6 +86,18 @@ namespace GameProto {
 
 	};
 
+	struct ReqChatInfo {
+		uint32_t roleId;
+		uint32_t targetId;
+		uint8_t channelId;
+	};
+
+	struct AckChatInfo {
+		uint32_t roleId;
+		uint32_t targetId;
+		uint8_t channelId;
+	};
+
 }
 
 }

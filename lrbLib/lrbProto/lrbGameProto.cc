@@ -11,6 +11,7 @@ ReqRoleInfo g_lrb_GameProto_ReqRoleInfo;
 ReqRoleName g_lrb_GameProto_ReqRoleName;
 ReqRolePos g_lrb_GameProto_ReqRolePos;
 ReqUseItem g_lrb_GameProto_ReqUseItem;
+ReqChatInfo g_lrb_GameProto_ReqChatInfo;
 void *g_lrb_GameProto_ptrs[] = {
 &g_lrb_GameProto_ReqStreamData,
 &g_lrb_GameProto_ReqVerifyData,
@@ -19,6 +20,7 @@ void *g_lrb_GameProto_ptrs[] = {
 &g_lrb_GameProto_ReqRoleName,
 &g_lrb_GameProto_ReqRolePos,
 &g_lrb_GameProto_ReqUseItem,
+&g_lrb_GameProto_ReqChatInfo,
 };
 
 #else
@@ -29,6 +31,7 @@ AckRoleInfo g_lrb_GameProto_AckRoleInfo;
 AckRoleName g_lrb_GameProto_AckRoleName;
 AckRolePos g_lrb_GameProto_AckRolePos;
 AckUseItem g_lrb_GameProto_AckUseItem;
+AckChatInfo g_lrb_GameProto_AckChatInfo;
 void *g_lrb_GameProto_ptrs[] = {
 &g_lrb_GameProto_AckStreamData,
 &g_lrb_GameProto_AckVerifyData,
@@ -37,6 +40,7 @@ void *g_lrb_GameProto_ptrs[] = {
 &g_lrb_GameProto_AckRoleName,
 &g_lrb_GameProto_AckRolePos,
 &g_lrb_GameProto_AckUseItem,
+&g_lrb_GameProto_AckChatInfo,
 };
 
 #endif
@@ -56,6 +60,8 @@ short g_lrb_GameProto_confs[][5] = {
 {0*sizeof(std::string),0,8,0,0},
 {0*sizeof(std::string),0,12,0,0},
 {0*sizeof(std::string),0,0,0,0},
+{0*sizeof(std::string),0,8,0,1},
+{0*sizeof(std::string),0,8,0,1},
 };
 
 namespace lrb {
@@ -64,7 +70,7 @@ namespace GameProto {
 
 void *getUnpackDest(int protoId)
 {
-	if (protoId < 0 || protoId >= 14)
+	if (protoId < 0 || protoId >= 16)
 		return NULL;
 
 #ifdef LRB_GameProto_SERVER
@@ -79,7 +85,7 @@ void *getUnpackDest(int protoId)
 
 short *getProtoConfs(int protoId)
 {
-	if (protoId < 0 || protoId >= 14)
+	if (protoId < 0 || protoId >= 16)
 		return NULL;
 
 	return g_lrb_GameProto_confs[protoId];

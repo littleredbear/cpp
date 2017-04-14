@@ -33,6 +33,9 @@ void packAckRolePos(lrb::NetWork::DataPacker *packer, uint32_t posx, uint32_t po
 void packReqUseItem(lrb::NetWork::DataPacker *packer, uint32_t itemId, uint32_t userId, uint32_t targetId);
 void bindReqUseItemFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func);
 void packAckUseItem(lrb::NetWork::DataPacker *packer);
+void packReqChatInfo(lrb::NetWork::DataPacker *packer, uint32_t roleId, uint32_t targetId, uint8_t channelId);
+void bindReqChatInfoFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func);
+void packAckChatInfo(lrb::NetWork::DataPacker *packer, uint32_t roleId, uint32_t targetId, uint8_t channelId);
 void bindAckFunc(AckFuncType acktype, const std::function<void()> &func);
 
 }

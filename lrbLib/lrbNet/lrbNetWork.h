@@ -218,6 +218,7 @@ namespace NetWork {
 
 
 	void connectServer(const std::string &hostname, const std::string &service, int uuid);
+	void joinMcastGroup();
 	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, void *data, size_t size);

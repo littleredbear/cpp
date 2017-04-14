@@ -3,7 +3,7 @@
 #include <unordered_map>
 
 
-using namespace lrb::server::data;
+using namespace lrb::server::mod;
 
 
 namespace {

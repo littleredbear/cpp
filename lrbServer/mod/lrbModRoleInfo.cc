@@ -5,7 +5,7 @@
 #include "lrbServerData.h"
 
 
-using namespace lrb::server::data;
+using namespace lrb::server::mod;
 using namespace lrb::GameProto;
 using namespace lrb::NetWork;
 

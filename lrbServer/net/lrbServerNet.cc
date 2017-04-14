@@ -8,7 +8,7 @@ using namespace lrb::server;
 
 void NetWork::initNetWork()
 {
-	data::ModRoleInfo::initModRoleInfo();
+	mod::ModRoleInfo::initModRoleInfo();
 	
 	lrb::NetWork::startService(8080);
 }

@@ -11,7 +11,7 @@ namespace NetWork {
 	
 namespace server {
 
-namespace data {
+namespace mod {
 
 	class ModRoleInfo {
 	public:
