@@ -140,6 +140,7 @@ namespace NetWork {
 
 		void disConnect();
 		void connectServer(const std::string &host, const std::string &service);
+		void mcastJoinGroup(const std::string &group, const std::string &source, short port, int family); 
 		void acceptLink(int sockfd);
 
 		void bindLastLink(NetLink *link);
@@ -155,8 +156,9 @@ namespace NetWork {
 		void processLinkProto(int protoId);
 		
 	private:
-		void sendNetData();
-		void readNetData();
+		void mcastJoinIPV4Group(int sockfd, const std::string &group, const std::string &source, short port);
+		void sendNetData(int sockfd);
+		void readNetData(int sockfd);
 		void linkFunc(int sockfd, short events);
 		void processReqLinkData();
 		void processAckLinkData();
@@ -175,9 +177,9 @@ namespace NetWork {
 		TerminalType m_ttype;
 		ProtoType m_protoType;
 		int m_off;
-		int m_fd;
 		int m_verify;
-		int m_handler;
+		int m_tcpHandler;
+		int m_udpHandler;
 
 		NetLink *m_last;
 		NetLink *m_next;
@@ -218,7 +220,7 @@ namespace NetWork {
 
 
 	void connectServer(const std::string &hostname, const std::string &service, int uuid);
-	void joinMcastGroup();
+	void mcastJoinGroup(const std::string &group, const std::string &source, short port, int uuid);
 	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, void *data, size_t size);

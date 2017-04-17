@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <algorithm>
+#include <unistd.h>
 
 
 using namespace lrb;
@@ -65,7 +66,8 @@ int Poller::addPollFd(int fd, short events, const std::function<void(int, short)
 
 void Poller::removePollFd(int handler)
 {
-	assert(handler <= m_handlers.size());
+	if (handler < 0 || handler >= m_handlers.size())
+		return;
 
 	int idx = m_handlers[handler];
 	if (idx >= m_pfds.size())
@@ -82,6 +84,9 @@ void Poller::removePollFd(int handler)
 		iter_swap(m_funcs.begin() + idx, m_funcs.end() - 1);
 	} 
 		
+	const pollfd &pfd = m_pfds.back();
+	close(pfd.fd);
+
 	m_pfds.pop_back();
 	m_funcs.pop_back();
 	m_fhandlers.pop_back();

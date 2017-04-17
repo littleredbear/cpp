@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <poll.h>
+#include <arpa/inet.h>
 
 
 using namespace lrb::NetWork;
@@ -223,7 +224,8 @@ DataPacker *DataCenter::getAvailablePacker()
 {
         if (m_able == m_back)
         {
-                DataPacker *ptr = (DataPacker *)calloc(m_size, sizeof(DataPacker));
+//                DataPacker *ptr = (DataPacker *)calloc(m_size, sizeof(DataPacker));
+		DataPacker *ptr = new DataPacker[m_size];
                 if (ptr == NULL)
                         return NULL; // to be continued
 
@@ -474,9 +476,9 @@ m_state(LinkState::LS_CLOSED),
 m_ttype(TerminalType::TT_NONE),
 m_protoType(ProtoType::PT_LINK),
 m_off(0),
-m_fd(0),
 m_verify(0),
-m_handler(0),
+m_tcpHandler(-1),
+m_udpHandler(-1),
 m_last(NULL),
 m_next(NULL),
 m_events(0)
@@ -524,7 +526,7 @@ void NetLink::addNetData(int verify, void *data, size_t size)
 	if (!(m_events & POLLOUT))
 	{
 		m_events = POLLIN | POLLOUT;
-		RunLoop::updatePollFd(m_handler, m_events, std::function<void(int, short)>());
+		RunLoop::updatePollFd(m_tcpHandler, m_events, std::function<void(int, short)>());
 	}
 	
 }
@@ -534,18 +536,25 @@ void NetLink::disConnect()
 	if (m_state == LinkState::LS_CLOSED)
 		return;
 
-	RunLoop::removePollFd(m_handler);
-	close(m_fd);
+	bool reuse = m_ttype == TerminalType::TT_SERVER;
+	RunLoop::removePollFd(m_tcpHandler);
+	RunLoop::removePollFd(m_udpHandler);
 	m_ttype = TerminalType::TT_NONE;
+	m_tcpHandler = -1;
+	m_udpHandler = -1;
 	setProtoType(ProtoType::PT_LINK);
 	m_state = LinkState::LS_CLOSED;
 
-	s_manager.reuseNetLink(this);
+	if (reuse)
+		s_manager.reuseNetLink(this);
 	//close callback to be continued
 }
 
 void NetLink::connectServer(const std::string &host, const std::string &service)
 {
+	if (m_tcpHandler != -1)
+		return;
+
 	m_host = host;
 	m_service = service;
 	
@@ -573,13 +582,12 @@ void NetLink::connectServer(const std::string &host, const std::string &service)
 		
 		if (ret == 0 || errno == EINPROGRESS)
 		{
-			m_fd = sockfd;
 			m_events = POLLIN | POLLOUT;
 			++m_verify;
 			m_ttype = TerminalType::TT_CLIENT;
 			m_state = LinkState::LS_TOLINK;
 
-			m_handler = RunLoop::addPollFd(sockfd, m_events, std::bind(&NetLink::linkFunc, this, std::placeholders::_1, std::placeholders::_2));
+			m_tcpHandler = RunLoop::addPollFd(sockfd, m_events, std::bind(&NetLink::linkFunc, this, std::placeholders::_1, std::placeholders::_2));
 			return;
 		}
 
@@ -589,15 +597,34 @@ void NetLink::connectServer(const std::string &host, const std::string &service)
 	// failed to be continued
 }
 
+void NetLink::mcastJoinGroup(const std::string &group, const std::string &source, short port, int family)
+{
+	if (m_udpHandler != -1)
+		return;
+
+	int sockfd = socket(family, SOCK_DGRAM, 0);
+	if (sockfd == -1)
+		return;
+
+	int flags = fcntl(sockfd, F_GETFL);
+	assert(flags != -1);
+	assert(fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == 0);
+
+	if (family == AF_INET)
+	{
+		mcastJoinIPV4Group(sockfd, group, source, port);
+	}
+
+}
+
 void NetLink::acceptLink(int sockfd)
 {
-	m_fd = sockfd;
 	m_events = POLLIN;
 	++m_verify;
 	m_ttype = TerminalType::TT_SERVER;
 	m_state = LinkState::LS_LINKED;
 	
-	m_handler = RunLoop::addPollFd(sockfd, m_events, std::bind(&NetLink::linkFunc, this, std::placeholders::_1, std::placeholders::_2));
+	m_tcpHandler = RunLoop::addPollFd(sockfd, m_events, std::bind(&NetLink::linkFunc, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 void NetLink::bindLastLink(NetLink *link)
@@ -660,7 +687,29 @@ void NetLink::processLinkProto(int protoId)
 
 }
 
-void NetLink::sendNetData()
+void NetLink::mcastJoinIPV4Group(int sockfd, const std::string &group, const std::string &source, short port)
+{
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(port);
+
+	if (bind(sockfd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+		return;
+
+	struct ip_mreq_source mreq;
+        inet_pton(AF_INET, group.c_str(), &mreq.imr_multiaddr);
+	inet_pton(AF_INET, source.c_str(), &mreq.imr_sourceaddr);
+        mreq.imr_interface.s_addr = INADDR_ANY;
+
+	if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, &mreq, sizeof(mreq)) != 0)
+		return;
+
+	m_udpHandler = RunLoop::addPollFd(sockfd, POLLIN, std::bind(&NetLink::linkFunc, this, std::placeholders::_1, std::placeholders::_2));
+
+}
+
+void NetLink::sendNetData(int sockfd)
 {
 	if (m_state == LinkState::LS_TOLINK)
 	{
@@ -670,19 +719,19 @@ void NetLink::sendNetData()
 		//connection established
 	}
 
-	while(m_execData->writeNetData(m_fd, m_verify, m_off))
+	while(m_execData->writeNetData(sockfd, m_verify, m_off))
 		m_execData = m_execData->nextData();
 
 	if (m_execData->empty() && (m_events & POLLOUT)) {
 		m_events = POLLIN;
-		RunLoop::updatePollFd(m_handler, m_events, std::function<void(int, short)>());
+		RunLoop::updatePollFd(m_tcpHandler, m_events, std::function<void(int, short)>());
 	}
 }
 
-void NetLink::readNetData()
+void NetLink::readNetData(int sockfd)
 {
 	do {
-		int ret = read(m_fd, s_netCache, s_netBuffSize);
+		int ret = read(sockfd, s_netCache, s_netBuffSize);
 		if (ret > 0)
 		{
 			m_parser.parseNetData(s_netCache, ret, m_verify, this);
@@ -705,12 +754,12 @@ void NetLink::linkFunc(int sockfd, short events)
 
 	if (events & POLLIN)
 	{
-		readNetData();
+		readNetData(sockfd);
 	}
 
 	if (events & POLLOUT)
 	{
-		sendNetData();
+		sendNetData(sockfd);
 	}
 }
 
@@ -862,6 +911,11 @@ namespace NetWork {
 void connectServer(const std::string &hostname, const std::string &service, int uuid)
 {
 	RunLoop::runInLoop(std::bind(&NetLink::connectServer, &s_links[uuid], hostname, service), RunLoopType::RLT_NET);
+}
+
+void mcastJoinGroup(const std::string &group, const std::string &source, short port, int uuid)
+{
+	RunLoop::runInLoop(std::bind(&NetLink::mcastJoinGroup, &s_links[uuid], group, source, port, AF_INET), RunLoopType::RLT_NET);
 }
 
 void startService(short service)
