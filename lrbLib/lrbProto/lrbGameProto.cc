@@ -58,10 +58,10 @@ short g_lrb_GameProto_confs[][5] = {
 {1*sizeof(std::string),0,0,0,0},
 {0*sizeof(std::string),0,8,0,0},
 {0*sizeof(std::string),0,8,0,0},
-{0*sizeof(std::string),0,12,0,0},
+{0*sizeof(std::string),0,8,0,0},
 {0*sizeof(std::string),0,0,0,0},
-{0*sizeof(std::string),0,8,0,1},
-{0*sizeof(std::string),0,8,0,1},
+{0*sizeof(std::string),0,4,0,1},
+{0*sizeof(std::string),0,4,0,1},
 };
 
 namespace lrb {

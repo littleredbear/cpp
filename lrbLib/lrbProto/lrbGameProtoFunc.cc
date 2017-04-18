@@ -144,11 +144,10 @@ void packAckRolePos(lrb::NetWork::DataPacker *packer, uint32_t posx, uint32_t po
 	packer->packData(&tmpdata, 11, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
-void packReqUseItem(lrb::NetWork::DataPacker *packer, uint32_t itemId, uint32_t userId, uint32_t targetId)
+void packReqUseItem(lrb::NetWork::DataPacker *packer, uint32_t itemId, uint32_t targetId)
 {
 	ReqUseItem tmpdata;
 	tmpdata.itemId = itemId;
-	tmpdata.userId = userId;
 	tmpdata.targetId = targetId;
 	packer->packData(&tmpdata, 12, lrb::NetWork::ProtoType::PT_GameProto);
 }
@@ -166,10 +165,9 @@ void packAckUseItem(lrb::NetWork::DataPacker *packer)
 	packer->packData(&tmpdata, 13, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
-void packReqChatInfo(lrb::NetWork::DataPacker *packer, uint32_t roleId, uint32_t targetId, uint8_t channelId)
+void packReqChatInfo(lrb::NetWork::DataPacker *packer, uint32_t targetId, uint8_t channelId)
 {
 	ReqChatInfo tmpdata;
-	tmpdata.roleId = roleId;
 	tmpdata.targetId = targetId;
 	tmpdata.channelId = channelId;
 	packer->packData(&tmpdata, 14, lrb::NetWork::ProtoType::PT_GameProto);
@@ -182,10 +180,9 @@ void bindReqChatInfoFunc(const std::function<void(lrb::NetWork::DataPacker *)> &
 #endif
 }
 
-void packAckChatInfo(lrb::NetWork::DataPacker *packer, uint32_t roleId, uint32_t targetId, uint8_t channelId)
+void packAckChatInfo(lrb::NetWork::DataPacker *packer, uint32_t targetId, uint8_t channelId)
 {
 	AckChatInfo tmpdata;
-	tmpdata.roleId = roleId;
 	tmpdata.targetId = targetId;
 	tmpdata.channelId = channelId;
 	packer->packData(&tmpdata, 15, lrb::NetWork::ProtoType::PT_GameProto);

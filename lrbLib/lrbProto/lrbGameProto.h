@@ -78,7 +78,6 @@ namespace GameProto {
 		
 	struct ReqUseItem {
 		uint32_t itemId;
-		uint32_t userId;
 		uint32_t targetId;
 	};
 	
@@ -87,13 +86,11 @@ namespace GameProto {
 	};
 
 	struct ReqChatInfo {
-		uint32_t roleId;
 		uint32_t targetId;
 		uint8_t channelId;
 	};
 
 	struct AckChatInfo {
-		uint32_t roleId;
 		uint32_t targetId;
 		uint8_t channelId;
 	};
