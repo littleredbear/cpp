@@ -7,8 +7,10 @@
 namespace lrb {
 
 	enum class RunLoopType {
-		RLT_LOGIC = 0,		//必须放在开始
-//		RLT_RENDER,
+#ifdef LRB_MAINTHREAD_RENDER
+		RLT_RENDER,
+#endif
+		RLT_LOGIC,		
 
 		RLT_NET,		// 必须倒数3位
 		RLT_LOG,		// 必须倒数2位

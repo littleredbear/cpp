@@ -15,17 +15,38 @@ namespace {
 	LoopPoller s_poller[(int)RunLoopType::RLT_TOP];
 	TimerManager s_timerManager[(int)RunLoopType::RLT_TOP-1];
 
+#ifdef LRB_GCC_KEYWORD_THREAD_NOT_SURPPORT
+	pthread_key_t s_thread_type_key;
+	RunLoopType s_loopTypes[] = {
+#ifdef LRB_MAINTHREAD_RENDER
+		RunLoopType::RLT_RENDER,
+#endif
+		RunLoopType::RLT_LOGIC,
+		RunLoopType::RLT_NET,
+		RunLoopType::RLT_LOG,
+		RunLoopType::RLT_TIMER,
+	};
+#else
 	__thread RunLoopType s_loopType = RunLoopType::RLT_LOGIC;
+#endif
+
 }
 
 void RunLoop::initRunLoop()
 {
-	for (int i = 0; i < (int)RunLoopType::RLT_TOP - 1; ++i)
+#ifdef LRB_GCC_KEYWORD_THREAD_NOT_SURPPORT
+	pthread_key_create(&s_thread_type_key, NULL);
+#endif
+	for (int i = 1; i < (int)RunLoopType::RLT_TOP - 1; ++i)
 	{
 		startNewLoop((RunLoopType)i);
 	}
 	
 	startTimerLoop();
+
+#ifdef LRB_MAINTHREAD_RENDER	
+	setLoopType(RunLoopType::RLT_RENDER);
+#endif
 }
 
 void RunLoop::initRunLoop(const std::function<void()> &func)
@@ -79,7 +100,11 @@ void RunLoop::runInLoop(const std::function<void()> &func, RunLoopType type, con
 
 RunLoopType RunLoop::loopType()
 {
+#ifdef LRB_GCC_KEYWORD_THREAD_NOT_SURPPORT
+	return *((RunLoopType *)pthread_getspecific(s_thread_type_key));
+#else
 	return s_loopType;
+#endif
 }
 
 const char *RunLoop::loopName()
@@ -128,7 +153,11 @@ void RunLoop::removePollFd(int handler)
 
 void RunLoop::setLoopType(RunLoopType type)
 {
+#ifdef LRB_GCC_KEYWORD_THREAD_NOT_SURPPORT
+	pthread_setspecific(s_thread_type_key, s_loopTypes + (int)type);
+#else
 	s_loopType = type;
+#endif
 }
 
 bool RunLoop::execTask()
