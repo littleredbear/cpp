@@ -496,7 +496,7 @@ void NetLink::sendGroupData(const std::string &group, short port, void *data, si
 	addr.sin_port = htons(port);
 	inet_pton(AF_INET, group.c_str(), &addr.sin_addr);
 	
-	int ret = sendto(s_udp_sockfd, data, size, 0, (struct sockaddr *)&addr, sizeof(addr));
+	sendto(s_udp_sockfd, data, size, 0, (struct sockaddr *)&addr, sizeof(addr));
 	free(data);
 	
 }
