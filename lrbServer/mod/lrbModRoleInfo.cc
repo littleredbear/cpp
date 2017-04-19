@@ -31,12 +31,9 @@ void ModRoleInfo::reqVerifyDataFunc(lrb::NetWork::DataPacker *packer)
 void ModRoleInfo::reqRoleInfoFunc(lrb::NetWork::DataPacker *packer)
 {
 	if (g_lrb_GameProto_ReqRoleInfo.roleId == 0)
-	{
-		lrb::GameProto::packAckRoleInfo(packer, DataCache::getInstance()->createRoleInfo());
-	} else 
-	{
-		lrb::GameProto::packAckRoleInfo(packer, g_lrb_GameProto_ReqRoleInfo.roleId);
-	}
+		g_lrb_GameProto_ReqRoleInfo.roleId = DataCache::getInstance()->createRoleInfo();
+
+	lrb::GameProto::packAckRoleInfo(packer, g_lrb_GameProto_ReqRoleInfo.roleId);
 }
 
 void ModRoleInfo::reqRoleNameFunc(lrb::NetWork::DataPacker *packer)

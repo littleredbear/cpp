@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <poll.h>
 #include <arpa/inet.h>
+#include <unordered_map>
 
 
 using namespace lrb::NetWork;
@@ -48,6 +49,8 @@ namespace {
 
 	DataCenter s_center;
 
+	std::unordered_map<uint32_t, NetLink *> s_lrb_links;
+
 	std::function<void(NetLink *)> s_linkConnectFunc;
 	std::function<void(NetLink *, int)> s_lrb_linkProtoFunc;
 	std::function<void()> s_lrb_finalCheckFunc;
@@ -81,7 +84,8 @@ m_doneVal(0),
 m_curVal(0),
 m_last(NULL),
 m_next(NULL),
-m_port(0)
+m_port(0),
+m_state(0)
 {
 
 }
@@ -114,11 +118,11 @@ void DataPacker::packData(void *data, int protoId, ProtoType type)
 
 }
 
-void DataPacker::setDoneValue(int val, int verify, NetLink *link)
+void DataPacker::setDoneValue(int val)
 {
-        m_link = link;
-        m_verify = verify;
-        if (val == m_curVal)
+	if (m_state != 0)
+		reusePacker();
+	else if (val == m_curVal)
                 sendData();
         else
                 m_doneVal = val;
@@ -130,6 +134,28 @@ void DataPacker::sendData(int linkId)
 	int ret = getData(&data);
 
 	::sendData(linkId, data, ret);
+	m_state = 1;
+}
+
+void DataPacker::sendToRoleIds(uint32_t count, ...)
+{
+	assert(count > 0);
+
+	void *data;
+	int ret = getData(&data);
+
+	uint32_t *roleIds = (uint32_t *)calloc(count, sizeof(uint32_t));
+	if (roleIds == NULL)
+		return;
+
+	va_list args;
+	va_start(args, count);
+	for (uint32_t i = 0; i < count; ++i)
+		roleIds[i] = va_arg(args, uint32_t);
+	va_end(args);
+	
+	RunLoop::runInLoop(std::bind(NetLink::sendToRoleIds, roleIds, count, data, ret), RunLoopType::RLT_NET);
+	m_state = 1;
 }
 
 int DataPacker::getData(void **res)
@@ -164,6 +190,22 @@ void DataPacker::setGroupSend(const std::string &group, short port)
 {
 	m_group = group;
 	m_port = port;
+}
+
+void DataPacker::roleLogin(uint32_t roleId)
+{
+	RunLoop::runInLoop(std::bind(&NetLink::roleLogin, m_link, roleId), RunLoopType::RLT_NET);
+}
+
+NetLink *DataPacker::netLink()
+{
+	return m_link;
+}
+
+void DataPacker::setNetLink(NetLink *link, int verify)
+{
+	m_link = link;
+        m_verify = verify;
 }
 
 void DataPacker::bindLastPacker(DataPacker *packer)
@@ -212,6 +254,7 @@ void DataPacker::reusePacker()
         m_curVal = 0;
         m_doneVal = 0;
 	m_port = 0;
+	m_state = 0;
 
 	RunLoop::runInLoop(std::bind(&DataCenter::reusePacker, &s_center, this), RunLoopType::RLT_NET);
 }
@@ -361,7 +404,13 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 
 	int val = 0;
 	TerminalType ttype = link->currentTType();
-	DataPacker *packer = ptype != ProtoType::PT_LINK && ttype == TerminalType::TT_SERVER ? s_center.getAvailablePacker() : NULL;
+	DataPacker *packer = NULL;
+
+	if (ptype != ProtoType::PT_LINK && ttype == TerminalType::TT_SERVER)
+	{
+		packer = s_center.getAvailablePacker();
+		packer->setNetLink(link, verify);
+	}
 
 	while(len > 0)
 	{
@@ -370,7 +419,6 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 		frame += sizeof(int);
 		len -= sizeof(int);
 	
-
 		int uuid = unpackData(frame, plen, ptype);
 		frame += plen;
 		len -= plen;
@@ -393,7 +441,7 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 	if (ttype == TerminalType::TT_SERVER)
 	{
 		RunLoop::runInLoop(s_lrb_finalCheckFunc, RunLoopType::RLT_LOGIC);
-		RunLoop::runInLoop(std::bind(&DataPacker::setDoneValue, packer, val, verify, link), RunLoopType::RLT_LOGIC);
+		RunLoop::runInLoop(std::bind(&DataPacker::setDoneValue, packer, val), RunLoopType::RLT_LOGIC);
 	} else if (ttype == TerminalType::TT_CLIENT)
 	{
 		RunLoop::runInLoop(std::bind(s_lrb_proto_ackfuncs[(int)ptype]), RunLoopType::RLT_LOGIC);
@@ -402,13 +450,61 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 }
 
 
+ReuseData::ReuseData():
+m_data(NULL),
+m_count(0)
+{
+
+}
+
+ReuseData::~ReuseData()
+{
+
+}
+
+void *ReuseData::data()
+{
+	return m_data;
+}
+
+void ReuseData::setData(void *data, uint32_t count)
+{
+	if (m_data)
+		free(m_data);
+	
+	m_data = data;
+	m_count = count;
+}
+
+void ReuseData::retain(uint32_t count)
+{
+	m_count += count;
+}
+
+void ReuseData::release(uint32_t count)
+{
+	if (m_count > count)
+	{
+		m_count -= count;
+	}
+	else 
+	{
+		if (m_data)
+			free(m_data);
+	
+		free(this);
+	}
+
+}
+
+
 //-------------------------------Net Data-----------------------------
 
 NetData::NetData():
-m_verify(0),
 m_data(NULL),
-m_size(0),
-m_next(NULL)
+m_next(NULL),
+m_verify(0),
+m_size(0)
 {
 
 }
@@ -418,7 +514,7 @@ NetData::~NetData()
 
 }
 
-bool NetData::setNetData(int verify, void *data, size_t size)
+bool NetData::setNetData(int verify, ReuseData *data, size_t size)
 {
 	if (m_size != 0 ||
 	    data == NULL ||
@@ -441,7 +537,7 @@ bool NetData::writeNetData(int sockfd, int verify, int &off)
 	{
 		int left = m_size - off;
 
-		int ret = write(sockfd, (char *)m_data + off, left);
+		int ret = write(sockfd, (char *)(m_data->data()) + off, left);
 		if (ret == -1)
 		{
 			if (errno == EAGAIN ||
@@ -455,7 +551,7 @@ bool NetData::writeNetData(int sockfd, int verify, int &off)
 		}
 	}
 
-	free(m_data);
+	m_data->release();
 	off = 0;
 	m_size = 0;
 
@@ -488,7 +584,10 @@ void NetLink::sendGroupData(const std::string &group, short port, void *data, si
 		s_udp_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
 	if (s_udp_sockfd == -1)
+	{
+		free(data);
 		return;
+	}
 
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
@@ -501,17 +600,42 @@ void NetLink::sendGroupData(const std::string &group, short port, void *data, si
 	
 }
 
+void NetLink::sendToRoleIds(uint32_t *roleIds, uint32_t rcount, void *data, size_t size)
+{
+	ReuseData *ptr = (ReuseData *)calloc(1, sizeof(ReuseData));
+	if (ptr == NULL)
+	{
+		free(data);
+		return;
+	}
+
+	ptr->setData(data, rcount);
+
+	for (uint32_t i = 0; i < rcount; ++i)
+	{
+		auto iter = s_lrb_links.find(roleIds[i]);
+		if (iter == s_lrb_links.end())
+		{
+			ptr->release();
+			continue;
+		}
+
+		iter->second->addReuseData(-1, ptr, size);
+	}
+}
+
 NetLink::NetLink():
-m_size(s_defaultNum),
+m_last(NULL),
+m_next(NULL),
 m_state(LinkState::LS_CLOSED),
 m_ttype(TerminalType::TT_NONE),
 m_protoType(ProtoType::PT_LINK),
+m_roleId(0),
+m_size(s_defaultNum),
 m_off(0),
 m_verify(0),
 m_tcpHandler(-1),
 m_udpHandler(-1),
-m_last(NULL),
-m_next(NULL),
 m_events(0)
 {
 	m_datas[s_defaultNum - 1].bindNextData(&m_datas[0]);
@@ -527,12 +651,25 @@ NetLink::~NetLink()
 
 void NetLink::addNetData(int verify, void *data, size_t size)
 {
+	ReuseData *ptr = (ReuseData *)calloc(1, sizeof(ReuseData));
+	if (ptr == NULL)
+	{
+		free(data);
+		return;
+	}
+
+	ptr->setData(data);
+	addReuseData(verify, ptr, size);
+}
+
+void NetLink::addReuseData(int verify, ReuseData *data, size_t size)
+{
 	if (verify == -1)
 		verify = m_verify;
 
 	if (m_state == LinkState::LS_CLOSED || verify != m_verify)
 	{
-		free(data);
+		data->release();
 		return;
 	}
 	
@@ -540,7 +677,10 @@ void NetLink::addNetData(int verify, void *data, size_t size)
 	{
 		NetData *ptr = (NetData *)calloc(m_size, sizeof(NetData));
 		if (ptr == NULL)
+		{
+			data->release();
 			return;
+		}
 
 		ptr[m_size-1].bindNextData(m_addData->nextData());
 		m_addData->bindNextData(ptr);
@@ -559,13 +699,29 @@ void NetLink::addNetData(int verify, void *data, size_t size)
 		m_events = POLLIN | POLLOUT;
 		RunLoop::updatePollFd(m_tcpHandler, m_events, std::function<void(int, short)>());
 	}
-	
+
+}
+
+void NetLink::roleLogin(uint32_t roleId)
+{
+	m_roleId = roleId;
+	s_lrb_links[roleId] = this;
+}
+
+void NetLink::roleLogout()
+{
+	if (m_roleId > 0)
+		s_lrb_links.erase(m_roleId);
+
+	m_roleId = 0;
 }
 
 void NetLink::disConnect()
 {
 	if (m_state == LinkState::LS_CLOSED)
 		return;
+
+	roleLogout();
 
 	bool reuse = m_ttype == TerminalType::TT_SERVER;
 	RunLoop::removePollFd(m_tcpHandler);

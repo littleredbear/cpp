@@ -76,6 +76,14 @@ namespace GameProto {
 		uint32_t posx;
 		uint32_t posy;
 	};
+
+	struct ReqLogin {
+
+	};
+
+	struct AckLogin {
+
+	};
 		
 	struct ReqUseItem {
 		uint32_t itemId;

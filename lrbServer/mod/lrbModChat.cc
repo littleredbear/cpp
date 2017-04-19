@@ -10,7 +10,8 @@ using namespace lrb::GameProto;
 
 extern ReqChatInfo g_lrb_GameProto_ReqChatInfo;
 extern ReqStreamData g_lrb_GameProto_ReqStreamData;
-
+extern ReqVerifyData g_lrb_GameProto_ReqVerifyData;
+extern ReqRoleInfo g_lrb_GameProto_ReqRoleInfo;
 
 void ModChat::initModChat()
 {
@@ -20,19 +21,21 @@ void ModChat::initModChat()
 
 void ModChat::reqChatInfo(lrb::NetWork::DataPacker *packer)
 {
+
+	lrb::GameProto::packAckStreamData(packer, g_lrb_GameProto_ReqStreamData.data, g_lrb_GameProto_ReqStreamData.size);
+	lrb::GameProto::packAckChatInfo(packer, g_lrb_GameProto_ReqChatInfo.targetId, g_lrb_GameProto_ReqChatInfo.channelId);
+
 	switch (g_lrb_GameProto_ReqChatInfo.channelId)
 	{
 	case 1://世界
 	{
 		packer->setGroupSend(LRB_SERVER_UDP_GROUP, LRB_SERVER_UDP_PORT);
-		lrb::GameProto::packAckStreamData(packer, g_lrb_GameProto_ReqStreamData.data, g_lrb_GameProto_ReqStreamData.size);
-		lrb::GameProto::packAckChatInfo(packer, g_lrb_GameProto_ReqChatInfo.targetId, g_lrb_GameProto_ReqChatInfo.channelId);
 	}
 	break;
 
 	case 2://个人
 	{
-
+		packer->sendToRoleIds(2, g_lrb_GameProto_ReqChatInfo.targetId, g_lrb_GameProto_ReqRoleInfo.roleId);
 	}
 	break;
 

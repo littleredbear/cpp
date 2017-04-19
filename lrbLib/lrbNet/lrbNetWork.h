@@ -25,10 +25,15 @@ namespace NetWork {
                 ~DataPacker();
                 
                 void packData(void *data, int protoId, ProtoType type);
-                void setDoneValue(int val, int verify, NetLink *link);
+                void setDoneValue(int val);
 		void sendData(int linkId);
+		void sendToRoleIds(uint32_t count, ...);
 		int getData(void **res);
 		void setGroupSend(const std::string &group, short port);
+		void roleLogin(uint32_t roleId);
+		
+		NetLink *netLink();
+		void setNetLink(NetLink *link, int verify);
 
                 void bindLastPacker(DataPacker *packer);
                 void bindNextPacker(DataPacker *packer);
@@ -53,6 +58,7 @@ namespace NetWork {
                 DataPacker *m_next;
 		
 		short m_port;
+		uint8_t m_state;
         };
 
 //-------------------------------------------Data Center------------------------------
@@ -109,13 +115,27 @@ namespace NetWork {
 		TT_SERVER,
 	};
 
+	class ReuseData {
+	public:
+		ReuseData();
+		~ReuseData();
+
+		void *data();
+		void setData(void *data, uint32_t count = 1);
+		void retain(uint32_t count = 1);
+		void release(uint32_t count = 1);
+
+	private:
+		void *m_data;
+		uint32_t m_count;
+	};
 
 	class NetData {
 	public:
 		NetData();
 		~NetData();
 
-		bool setNetData(int verify, void *data, size_t size);
+		bool setNetData(int verify, ReuseData *data, size_t size);
 		bool writeNetData(int sockfd, int verify, int &off);
 		bool empty();
 
@@ -123,10 +143,11 @@ namespace NetWork {
 		NetData *nextData();
 
 	private:
-		int m_verify;
-		void *m_data;
-		size_t m_size;
+		ReuseData *m_data;
 		NetData *m_next;
+
+		int m_verify;
+		size_t m_size;
 	};
 
 
@@ -136,11 +157,16 @@ namespace NetWork {
 	public:
 		const static int s_defaultNum = 128;
 		static void sendGroupData(const std::string &group, short port, void *data, size_t size);
+		static void sendToRoleIds(uint32_t *roleId, uint32_t rcount, void *data, size_t size);
 
 		NetLink();
 		~NetLink();
 
 		void addNetData(int verify, void *data, size_t size);
+		void addReuseData(int verify, ReuseData *data, size_t size);
+
+		void roleLogin(uint32_t roleId);
+		void roleLogout();
 
 		void disConnect();
 		void connectServer(const std::string &host, const std::string &service);
@@ -173,23 +199,25 @@ namespace NetWork {
 		std::vector<void *> m_ptrs;
 
 		NetData m_datas[s_defaultNum];
+
 		NetData *m_addData;
 		NetData *m_execData;
-		int m_size;
+		NetLink *m_last;
+		NetLink *m_next;
 
 		LinkState m_state;
 		TerminalType m_ttype;
 		ProtoType m_protoType;
+
+		uint32_t m_roleId;
+		
+		int m_size;
 		int m_off;
 		int m_verify;
 		int m_tcpHandler;
 		int m_udpHandler;
 
-		NetLink *m_last;
-		NetLink *m_next;
-
 		short m_events;
-
 	};
 
 //--------------------------------Link Manager------------------------------------
