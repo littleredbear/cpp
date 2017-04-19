@@ -199,7 +199,7 @@ void bindAckFunc(AckFuncType acktype, const std::function<void()> &func)
 void execReqFunc(int protoId, lrb::NetWork::DataPacker *packer)
 {
 #ifdef LRB_GameProto_SERVER
-	if (protoId >= 0 && protoId < 16 && !(protoId & 1))
+	if (protoId > 0 && protoId < 16 && !(protoId & 1))
 		g_lrb_GameProto_reqFuncs[protoId >> 1](packer);
 #endif
 }

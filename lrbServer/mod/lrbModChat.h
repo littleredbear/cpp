@@ -14,7 +14,10 @@ namespace mod {
 
 	class ModChat {
 	public:
+		static void initModChat();
 
+	private:
+		static void reqChatInfo(lrb::NetWork::DataPacker *packer);
 
 	};
 

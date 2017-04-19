@@ -21,6 +21,7 @@ namespace GameProto {
 		AFT_ROLEINFO,
 		AFT_ROLENAME,
 		AFT_ROLEPOS,
+		AFT_CHAT,
 		AFT_TOP,
 	};
 	

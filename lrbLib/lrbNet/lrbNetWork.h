@@ -28,6 +28,7 @@ namespace NetWork {
                 void setDoneValue(int val, int verify, NetLink *link);
 		void sendData(int linkId);
 		int getData(void **res);
+		void setGroupSend(const std::string &group, short port);
 
                 void bindLastPacker(DataPacker *packer);
                 void bindNextPacker(DataPacker *packer);
@@ -41,6 +42,7 @@ namespace NetWork {
 
                 std::vector<void *> m_datas;
                 std::vector<int> m_lens;
+		std::string m_group;
 
                 int m_doneVal;
                 int m_curVal;
@@ -49,7 +51,8 @@ namespace NetWork {
 
                 DataPacker *m_last;
                 DataPacker *m_next;
-
+		
+		short m_port;
         };
 
 //-------------------------------------------Data Center------------------------------
@@ -132,6 +135,7 @@ namespace NetWork {
 	class NetLink {
 	public:
 		const static int s_defaultNum = 128;
+		static void sendGroupData(const std::string &group, short port, void *data, size_t size);
 
 		NetLink();
 		~NetLink();
@@ -224,6 +228,7 @@ namespace NetWork {
 	void startService(short service);
 	void disConnect(int uuid);
 	void sendData(int uuid, void *data, size_t size);
+	void sendGroupData(const std::string &group, short port, void *data, size_t size);
     	int packData(const void *data, int uuid, void **res, ProtoType ptype); //res需要自行释放
     	int unpackData(const char *src, int size, ProtoType ptype);
 	void bindConnectFunc(const std::function<void(NetLink *)> &func);

@@ -38,7 +38,7 @@ namespace {
 
 	const static int s_maxLinkNum = (1 << 2);
 	const static int s_netBuffSize = (1 << 10);
-
+	int s_udp_sockfd = -1;
 	char s_netCache[s_netBuffSize];
 
 	NetLink s_links[s_maxLinkNum];
@@ -80,7 +80,8 @@ DataPacker::DataPacker():
 m_doneVal(0),
 m_curVal(0),
 m_last(NULL),
-m_next(NULL)
+m_next(NULL),
+m_port(0)
 {
 
 }
@@ -117,7 +118,6 @@ void DataPacker::setDoneValue(int val, int verify, NetLink *link)
 {
         m_link = link;
         m_verify = verify;
-
         if (val == m_curVal)
                 sendData();
         else
@@ -160,6 +160,12 @@ int DataPacker::getData(void **res)
 	return size + sizeof(int);
 }
 
+void DataPacker::setGroupSend(const std::string &group, short port)
+{
+	m_group = group;
+	m_port = port;
+}
+
 void DataPacker::bindLastPacker(DataPacker *packer)
 {
         m_last = packer;
@@ -190,8 +196,11 @@ void DataPacker::sendData()
 {
 	void *data;
 	int ret = getData(&data);
+	if (m_group.empty())
+       		RunLoop::runInLoop(std::bind(&NetLink::addNetData, m_link, m_verify, data, ret), RunLoopType::RLT_NET);
+	else
+		sendGroupData(m_group, m_port, data, ret);
 
-        RunLoop::runInLoop(std::bind(&NetLink::addNetData, m_link, m_verify, data, ret), RunLoopType::RLT_NET);
         reusePacker();
 }
 
@@ -199,10 +208,12 @@ void DataPacker::reusePacker()
 {
         m_datas.clear();
         m_lens.clear();
+	m_group.clear();
         m_curVal = 0;
         m_doneVal = 0;
+	m_port = 0;
 
-		RunLoop::runInLoop(std::bind(&DataCenter::reusePacker, &s_center, this), RunLoopType::RLT_NET);
+	RunLoop::runInLoop(std::bind(&DataCenter::reusePacker, &s_center, this), RunLoopType::RLT_NET);
 }
 
 //------------------------------------------Data Center-------------------------------------
@@ -358,6 +369,7 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 		memcpy(&plen, frame, sizeof(int));
 		frame += sizeof(int);
 		len -= sizeof(int);
+	
 
 		int uuid = unpackData(frame, plen, ptype);
 		frame += plen;
@@ -469,6 +481,25 @@ NetData *NetData::nextData()
 }
 
 //---------------------------------------------Net Link---------------------------------
+
+void NetLink::sendGroupData(const std::string &group, short port, void *data, size_t size)
+{
+	if (s_udp_sockfd == -1)
+		s_udp_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+	if (s_udp_sockfd == -1)
+		return;
+
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(port);
+	inet_pton(AF_INET, group.c_str(), &addr.sin_addr);
+	
+	int ret = sendto(s_udp_sockfd, data, size, 0, (struct sockaddr *)&addr, sizeof(addr));
+	free(data);
+	
+}
 
 NetLink::NetLink():
 m_size(s_defaultNum),
@@ -933,6 +964,11 @@ void sendData(int uuid, void *data, size_t size)
 	RunLoop::runInLoop(std::bind(&NetLink::addNetData, &s_links[uuid], -1, data, size), RunLoopType::RLT_NET);
 }
 
+void sendGroupData(const std::string &group, short port, void *data, size_t size)
+{
+	RunLoop::runInLoop(std::bind(NetLink::sendGroupData, group, port, data, size), RunLoopType::RLT_NET);
+}
+
 int packData(const void *data, int uuid, void **res, ProtoType ptype)
 {
 		if (ptype < ProtoType::PT_LINK || ptype >= ProtoType::PT_TOP)
@@ -945,14 +981,15 @@ int packData(const void *data, int uuid, void **res, ProtoType ptype)
 			if (size <= 0)
 				return -1;
 
-			char *ptr = (char *)calloc(size + sizeof(int32_t), sizeof(char));
+			char *ptr = (char *)calloc(size + sizeof(int), sizeof(char));
 			if (ptr == NULL)
 				return -1;
 
-			memcpy(ptr, &size, sizeof(int32_t));
-			memcpy(ptr + sizeof(int32_t), *(void **)data, size);
+			memcpy(ptr, &uuid, sizeof(int));
+			memcpy(ptr + sizeof(int), *(void **)data, size);
+			*res = ptr;
 
-			return size + sizeof(int32_t);
+			return size + sizeof(int);
 		}
 
 		short *lrb_proto_confs = s_lrb_proto_confs[(int)ptype](uuid);
