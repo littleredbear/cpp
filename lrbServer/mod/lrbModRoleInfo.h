@@ -28,7 +28,7 @@ namespace mod {
 
 	private:
 		static void reqVerifyDataFunc(lrb::NetWork::DataPacker *packer);
-		static void reqRoleInfoFunc(lrb::NetWork::DataPacker *packer);
+		static void reqRoleIdFunc(lrb::NetWork::DataPacker *packer);
 		static void reqRoleNameFunc(lrb::NetWork::DataPacker *packer);
 		static void reqRolePosFunc(lrb::NetWork::DataPacker *packer);
 		

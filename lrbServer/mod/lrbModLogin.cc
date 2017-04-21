@@ -7,7 +7,7 @@
 using namespace lrb::server::mod;
 using namespace lrb::GameProto;
 
-extern ReqRoleInfo g_lrb_GameProto_ReqRoleInfo;
+extern ReqRoleId g_lrb_GameProto_ReqRoleId;
 
 
 void ModLogin::initModLogin()
@@ -18,6 +18,6 @@ void ModLogin::initModLogin()
 
 void ModLogin::reqLogin(lrb::NetWork::DataPacker *packer)
 {
-	packer->roleLogin(g_lrb_GameProto_ReqRoleInfo.roleId);
+	packer->roleLogin(g_lrb_GameProto_ReqRoleId.roleId);
 	lrb::GameProto::packAckLogin(packer);
 }

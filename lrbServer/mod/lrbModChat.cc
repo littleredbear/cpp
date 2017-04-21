@@ -11,7 +11,7 @@ using namespace lrb::GameProto;
 extern ReqChatInfo g_lrb_GameProto_ReqChatInfo;
 extern ReqStreamData g_lrb_GameProto_ReqStreamData;
 extern ReqVerifyData g_lrb_GameProto_ReqVerifyData;
-extern ReqRoleInfo g_lrb_GameProto_ReqRoleInfo;
+extern ReqRoleId g_lrb_GameProto_ReqRoleId;
 
 void ModChat::initModChat()
 {
@@ -35,7 +35,7 @@ void ModChat::reqChatInfo(lrb::NetWork::DataPacker *packer)
 
 	case 2://个人
 	{
-		packer->sendToRoleIds(2, g_lrb_GameProto_ReqChatInfo.targetId, g_lrb_GameProto_ReqRoleInfo.roleId);
+		packer->sendToRoleIds(2, g_lrb_GameProto_ReqChatInfo.targetId, g_lrb_GameProto_ReqRoleId.roleId);
 	}
 	break;
 

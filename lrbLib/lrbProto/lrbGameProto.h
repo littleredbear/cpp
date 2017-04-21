@@ -35,6 +35,14 @@ namespace GameProto {
 		int32_t size;
 	};
 
+	struct ReqAckFuncType {
+		uint32_t acktype;
+	};
+
+	struct AckAckFuncType {
+		uint32_t acktype;
+	};
+
 	struct ReqVerifyData {
 		uint32_t verify;
 	};
@@ -51,11 +59,11 @@ namespace GameProto {
 		uint32_t errorCode;
 	};
 
-	struct ReqRoleInfo {
+	struct ReqRoleId {
 		uint32_t roleId;
 	};
 
-	struct AckRoleInfo {
+	struct AckRoleId {
 		uint32_t roleId;
 	};
 
@@ -84,9 +92,26 @@ namespace GameProto {
 	struct AckLogin {
 
 	};
+
+	struct ReqModId {
+		uint32_t modId;
+	};
+
+	struct AckModId {
+		uint32_t modId;
+	};
+
+	struct ReqFight {
+		uint32_t targetId;
+	};
+
+	struct AckFight {
+		
+	};
 		
 	struct ReqUseItem {
 		uint32_t itemId;
+		uint32_t userId;
 		uint32_t targetId;
 	};
 	
