@@ -14,6 +14,11 @@ namespace server {
 namespace mod {
 
 	class ModFightData {
+	public:
+		
+
+	private:
+
 
 	};
 

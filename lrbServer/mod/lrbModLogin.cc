@@ -20,4 +20,6 @@ void ModLogin::reqLogin(lrb::NetWork::DataPacker *packer)
 {
 	packer->roleLogin(g_lrb_GameProto_ReqRoleId.roleId);
 	lrb::GameProto::packAckLogin(packer);
+	packer->addValue();
 }
+

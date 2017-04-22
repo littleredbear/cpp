@@ -99,20 +99,20 @@ namespace GameProto {
 
 	struct AckModId {
 		uint32_t modId;
+		uint32_t modRoleId;
 	};
 
 	struct ReqFight {
-		uint32_t targetId;
+		uint32_t modTargetId;
 	};
 
 	struct AckFight {
-		
+		uint32_t fightId;
 	};
 		
 	struct ReqUseItem {
 		uint32_t itemId;
-		uint32_t userId;
-		uint32_t targetId;
+		uint32_t modTargetId;
 	};
 	
 	struct AckUseItem {

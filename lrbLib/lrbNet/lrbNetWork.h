@@ -24,6 +24,7 @@ namespace NetWork {
                 DataPacker();
                 ~DataPacker();
                 
+		void addValue(int val = 1);
                 void packData(void *data, int protoId, ProtoType type);
                 void setDoneValue(int val);
 		void sendData(int linkId);
@@ -94,6 +95,7 @@ namespace NetWork {
         private:
                 void parseFirstData(char *data, int size, int verify, NetLink *link);
                 void parseNetFrame(char *frame, int len, int verify, NetLink *link);
+		bool checkParseNetFrame(NetLink *link);
 
                 char *m_dataCache;
                 int m_cacheLen;
@@ -165,6 +167,7 @@ namespace NetWork {
 		void addNetData(int verify, void *data, size_t size);
 		void addReuseData(int verify, ReuseData *data, size_t size);
 
+		uint32_t roleId();
 		void roleLogin(uint32_t roleId);
 		void roleLogout();
 

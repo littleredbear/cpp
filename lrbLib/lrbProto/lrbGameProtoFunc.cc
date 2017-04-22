@@ -198,17 +198,18 @@ void bindReqModIdFunc(const std::function<void(lrb::NetWork::DataPacker *)> &fun
 #endif
 }
 
-void packAckModId(lrb::NetWork::DataPacker *packer, uint32_t modId)
+void packAckModId(lrb::NetWork::DataPacker *packer, uint32_t modId, uint32_t modRoleId)
 {
 	AckModId tmpdata;
 	tmpdata.modId = modId;
+	tmpdata.modRoleId = modRoleId;
 	packer->packData(&tmpdata, 17, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
-void packReqFight(lrb::NetWork::DataPacker *packer, uint32_t targetId)
+void packReqFight(lrb::NetWork::DataPacker *packer, uint32_t modTargetId)
 {
 	ReqFight tmpdata;
-	tmpdata.targetId = targetId;
+	tmpdata.modTargetId = modTargetId;
 	packer->packData(&tmpdata, 18, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
@@ -219,18 +220,18 @@ void bindReqFightFunc(const std::function<void(lrb::NetWork::DataPacker *)> &fun
 #endif
 }
 
-void packAckFight(lrb::NetWork::DataPacker *packer)
+void packAckFight(lrb::NetWork::DataPacker *packer, uint32_t fightId)
 {
 	AckFight tmpdata;
+	tmpdata.fightId = fightId;
 	packer->packData(&tmpdata, 19, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
-void packReqUseItem(lrb::NetWork::DataPacker *packer, uint32_t itemId, uint32_t userId, uint32_t targetId)
+void packReqUseItem(lrb::NetWork::DataPacker *packer, uint32_t itemId, uint32_t modTargetId)
 {
 	ReqUseItem tmpdata;
 	tmpdata.itemId = itemId;
-	tmpdata.userId = userId;
-	tmpdata.targetId = targetId;
+	tmpdata.modTargetId = modTargetId;
 	packer->packData(&tmpdata, 20, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
@@ -289,9 +290,9 @@ void execReqFunc(int protoId, lrb::NetWork::DataPacker *packer)
 void execAckFunc()
 {
 #ifndef LRB_GameProto_SERVER
-	int verify = g_lrb_GameProto_AckVerifyData.verify;
+	int verify = g_lrb_GameProto_AckAckFuncType.acktype;
 	if(verify > (int)AckFuncType::AFT_BOT && verify < (int)AckFuncType::AFT_TOP)
-		g_lrb_GameProto_ackFuncs[verify]();
+		RunLoop::runInLoop(g_lrb_GameProto_ackFuncs[verify], RunLoopType::RLT_LOGIC);
 #endif
 }
 

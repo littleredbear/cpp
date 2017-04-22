@@ -11,7 +11,6 @@ using namespace lrb::GameProto;
 extern ReqChatInfo g_lrb_GameProto_ReqChatInfo;
 extern ReqStreamData g_lrb_GameProto_ReqStreamData;
 extern ReqVerifyData g_lrb_GameProto_ReqVerifyData;
-extern ReqRoleId g_lrb_GameProto_ReqRoleId;
 
 void ModChat::initModChat()
 {
@@ -30,6 +29,7 @@ void ModChat::reqChatInfo(lrb::NetWork::DataPacker *packer)
 	case 1://世界
 	{
 		packer->setGroupSend(LRB_SERVER_UDP_GROUP, LRB_SERVER_UDP_PORT);
+		packer->addValue(2);
 	}
 	break;
 

@@ -27,7 +27,7 @@ namespace mod {
 		uint32_t posy();
 
 	private:
-		static void reqVerifyDataFunc(lrb::NetWork::DataPacker *packer);
+		static void reqAckFuncTypeFunc(lrb::NetWork::DataPacker *packer);
 		static void reqRoleIdFunc(lrb::NetWork::DataPacker *packer);
 		static void reqRoleNameFunc(lrb::NetWork::DataPacker *packer);
 		static void reqRolePosFunc(lrb::NetWork::DataPacker *packer);

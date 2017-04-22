@@ -1,4 +1,4 @@
-#include "lrbServerData.h"
+#include "lrbModData.h"
 #include "lrbModRoleInfo.h"
 #include <unordered_map>
 
@@ -10,10 +10,12 @@ namespace {
 	
 	DataCache s_lrb_server_datacache_instance;
 	std::unordered_map<uint32_t, RoleData *> s_lrb_server_rolemap;
+
 }
 
 RoleData::RoleData():
-m_roleInfo(NULL)
+m_roleInfo(NULL),
+m_modInfo(NULL)
 {
 
 }
@@ -21,6 +23,7 @@ m_roleInfo(NULL)
 RoleData::~RoleData()
 {
 	delete m_roleInfo;
+	delete m_modInfo;
 }
 
 void RoleData::loadModRoleInfo(uint32_t roleId)
@@ -35,6 +38,18 @@ ModRoleInfo *RoleData::getModRoleInfo()
 	return m_roleInfo;
 }
 
+ModModInfo *RoleData::getModModInfo()
+{
+	return m_modInfo;
+}
+
+ModModInfo *RoleData::loadModModInfo()
+{
+	if (m_modInfo == NULL)
+		m_modInfo = new ModModInfo;
+
+	return m_modInfo;
+}
 
 DataCache *DataCache::getInstance()
 {
@@ -77,8 +92,6 @@ RoleData *DataCache::getRoleData(uint32_t roleId)
 	
 	return data;
 }
-
-
 
 
 

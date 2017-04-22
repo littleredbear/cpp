@@ -38,11 +38,11 @@ void bindReqLoginFunc(const std::function<void(lrb::NetWork::DataPacker *)> &fun
 void packAckLogin(lrb::NetWork::DataPacker *packer);
 void packReqModId(lrb::NetWork::DataPacker *packer, uint32_t modId);
 void bindReqModIdFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func);
-void packAckModId(lrb::NetWork::DataPacker *packer, uint32_t modId);
-void packReqFight(lrb::NetWork::DataPacker *packer, uint32_t targetId);
+void packAckModId(lrb::NetWork::DataPacker *packer, uint32_t modId, uint32_t modRoleId);
+void packReqFight(lrb::NetWork::DataPacker *packer, uint32_t modTargetId);
 void bindReqFightFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func);
-void packAckFight(lrb::NetWork::DataPacker *packer);
-void packReqUseItem(lrb::NetWork::DataPacker *packer, uint32_t itemId, uint32_t userId, uint32_t targetId);
+void packAckFight(lrb::NetWork::DataPacker *packer, uint32_t fightId);
+void packReqUseItem(lrb::NetWork::DataPacker *packer, uint32_t itemId, uint32_t modTargetId);
 void bindReqUseItemFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func);
 void packAckUseItem(lrb::NetWork::DataPacker *packer);
 void packReqChatInfo(lrb::NetWork::DataPacker *packer, uint32_t targetId, uint8_t channelId);

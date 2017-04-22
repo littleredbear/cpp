@@ -73,7 +73,7 @@ function genOtherFunc()
 	local execReqFunc='void execReqFunc(int protoId, lrb::NetWork::DataPacker *packer)\n{\n#ifdef LRB_'$mname'_SERVER\n\tif (protoId > 0 && protoId < '$count' && !(protoId & 1))\n\t\tg_lrb_'$mname'_reqFuncs[protoId >> 1](packer);\n#endif\n}\n\n'
 	cfuncs=${cfuncs}${execReqFunc}
 
-	local execAckFunc='void execAckFunc()\n{\n#ifndef LRB_'$mname'_SERVER\n\tint verify = g_lrb_'$mname'_AckVerifyData.verify;\n\tif(verify > (int)AckFuncType::AFT_BOT && verify < (int)AckFuncType::AFT_TOP)\n\t\tg_lrb_'$mname'_ackFuncs[verify]();\n#endif\n}\n\n'
+	local execAckFunc='void execAckFunc()\n{\n#ifndef LRB_'$mname'_SERVER\n\tint verify = g_lrb_'$mname'_AckAckFuncType.acktype;\n\tif(verify > (int)AckFuncType::AFT_BOT && verify < (int)AckFuncType::AFT_TOP)\n\t\tRunLoop::runInLoop(g_lrb_'$mname'_ackFuncs[verify], RunLoopType::RLT_LOGIC);\n#endif\n}\n\n'
 	cfuncs=${cfuncs}${execAckFunc}
 }
 

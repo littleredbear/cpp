@@ -10,6 +10,8 @@ namespace server {
 namespace mod {
 
 	class ModRoleInfo;
+	class ModModInfo;
+	
 
 	class RoleData {
 	public:
@@ -19,8 +21,12 @@ namespace mod {
 		void loadModRoleInfo(uint32_t roleId);
 		ModRoleInfo *getModRoleInfo();
 
+		ModModInfo *getModModInfo();
+		ModModInfo *loadModModInfo();
+
 	private:
 		ModRoleInfo *m_roleInfo;
+		ModModInfo *m_modInfo;
 	};
 
 	class DataCache {

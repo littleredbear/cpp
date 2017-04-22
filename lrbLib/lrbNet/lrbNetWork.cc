@@ -95,10 +95,19 @@ DataPacker::~DataPacker()
 
 }
 
+void DataPacker::addValue(int val)
+{
+	m_curVal += val;
+
+        if (m_doneVal != 0 && m_doneVal == m_curVal)
+        {
+                sendData();
+        }
+
+}
+
 void DataPacker::packData(void *data, int protoId, ProtoType type)
 {
-        ++ m_curVal;
-
 	if (data == NULL)
 		return;
 		
@@ -110,11 +119,6 @@ void DataPacker::packData(void *data, int protoId, ProtoType type)
 
         m_datas.push_back(res);
         m_lens.push_back(ret);
-
-        if (m_doneVal != 0 && m_doneVal == m_curVal)
-        {
-                sendData();
-        }
 
 }
 
@@ -357,8 +361,8 @@ void DataParser::parseNetData(char *data, int size, int verify, NetLink *link)
                         } else
                         {
                                 memcpy(m_dataCache + m_cacheLen, data, needLen);
-								parseNetFrame(m_dataCache, m_frameLen, m_verify, link);
-                                free(m_dataCache);
+					RunLoop::runInLoop(std::bind(&DataParser::parseNetFrame, this, m_dataCache, m_frameLen, m_verify, link), RunLoopType::RLT_LOGIC);
+//					parseNetFrame(m_dataCache, m_frameLen, m_verify, link);
                                 m_dataCache = NULL;
 
                                 parseFirstData(data + needLen, size-needLen, verify, link);
@@ -389,7 +393,13 @@ void DataParser::parseFirstData(char *data, int size, int verify, NetLink *link)
                         break;
                 } else
                 {
-						parseNetFrame(data, frameLen, verify, link);
+				void *ptr = calloc(frameLen, sizeof(char));
+				if (ptr)
+				{
+					memcpy(ptr, data, frameLen);
+					RunLoop::runInLoop(std::bind(&DataParser::parseNetFrame, this, ptr, frameLen, verify, link), RunLoopType::RLT_LOGIC);
+				}
+//			parseNetFrame(data, frameLen, verify, link);
                         data += frameLen;
                         size -= frameLen;
                 }
@@ -399,9 +409,6 @@ void DataParser::parseFirstData(char *data, int size, int verify, NetLink *link)
 void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 {
 	ProtoType ptype = link->currentProtoType();
-	if (ptype < ProtoType::PT_LINK || ptype >= ProtoType::PT_TOP)
-		return;
-
 	int val = 0;
 	TerminalType ttype = link->currentTType();
 	DataPacker *packer = NULL;
@@ -430,21 +437,25 @@ void DataParser::parseNetFrame(char *frame, int len, int verify, NetLink *link)
 			link->processLinkProto(uuid);
 		else if (ttype == TerminalType::TT_SERVER)
 		{
-			RunLoop::runInLoop(std::bind(s_lrb_proto_reqfuncs[(int)ptype], uuid, packer), RunLoopType::RLT_LOGIC);
+//			RunLoop::runInLoop(std::bind(s_lrb_proto_reqfuncs[(int)ptype], uuid, packer), RunLoopType::RLT_LOGIC);
+			s_lrb_proto_reqfuncs[(int)ptype](uuid, packer);
 			++val;
 		}
 	}
 	
+	free(frame);
+
 	if (ptype == ProtoType::PT_LINK)
 		return;
 
 	if (ttype == TerminalType::TT_SERVER)
 	{
-		RunLoop::runInLoop(s_lrb_finalCheckFunc, RunLoopType::RLT_LOGIC);
-		RunLoop::runInLoop(std::bind(&DataPacker::setDoneValue, packer, val), RunLoopType::RLT_LOGIC);
+//		RunLoop::runInLoop(s_lrb_finalCheckFunc, RunLoopType::RLT_LOGIC);
+//		RunLoop::runInLoop(std::bind(&DataPacker::setDoneValue, packer, val), RunLoopType::RLT_LOGIC);
+		packer->setDoneValue(val);
 	} else if (ttype == TerminalType::TT_CLIENT)
 	{
-		RunLoop::runInLoop(std::bind(s_lrb_proto_ackfuncs[(int)ptype]), RunLoopType::RLT_LOGIC);
+		s_lrb_proto_ackfuncs[(int)ptype]();
 	}
 
 }
@@ -702,6 +713,11 @@ void NetLink::addReuseData(int verify, ReuseData *data, size_t size)
 
 }
 
+uint32_t NetLink::roleId()
+{
+	return m_roleId;
+}
+
 void NetLink::roleLogin(uint32_t roleId)
 {
 	m_roleId = roleId;
@@ -870,7 +886,7 @@ void NetLink::processLinkProto(int protoId)
 	}
 
 	if (s_lrb_linkProtoFunc)
-		RunLoop::runInLoop(std::bind(s_lrb_linkProtoFunc, this, protoId), RunLoopType::RLT_LOGIC);
+		s_lrb_linkProtoFunc(protoId);
 
 }
 
@@ -956,7 +972,8 @@ void NetLink::processReqLinkData()
 	if (ptype <= ProtoType::PT_LINK || ptype >= ProtoType::PT_TOP)
 		ptype = ProtoType::PT_LINK;
 
-	setProtoType(ptype);
+	RunLoop::runInLoop(std::bind(&NetLink::setProtoType, this, ptype), RunLoopType::RLT_NET);
+//	setProtoType(ptype);
 	
 	lrb::LinkProto::AckLinkData ldata;
 	ldata.protoType = (int)ptype;
@@ -976,7 +993,8 @@ void NetLink::processAckLinkData()
 	if (ptype <= ProtoType::PT_LINK || ptype >= ProtoType::PT_TOP)
 		ptype = ProtoType::PT_LINK;
 
-	setProtoType(ptype);
+	RunLoop::runInLoop(std::bind(&NetLink::setProtoType, this, ptype), RunLoopType::RLT_NET);
+//	setProtoType(ptype);
 
 }
 

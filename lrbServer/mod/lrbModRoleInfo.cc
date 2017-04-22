@@ -2,7 +2,7 @@
 #include "lrbGameProto.h"
 #include "lrbGameProtoFunc.h"
 #include "lrbNetWork.h"
-#include "lrbServerData.h"
+#include "lrbModData.h"
 
 
 using namespace lrb::server::mod;
@@ -10,22 +10,23 @@ using namespace lrb::GameProto;
 using namespace lrb::NetWork;
 
 
-extern ReqVerifyData g_lrb_GameProto_ReqVerifyData;
+extern ReqAckFuncType g_lrb_GameProto_ReqAckFuncType;
 extern ReqRoleInfo g_lrb_GameProto_ReqRoleInfo;
 extern ReqRoleName g_lrb_GameProto_ReqRoleName;
 extern ReqRolePos g_lrb_GameProto_ReqRolePos;
 
 void ModRoleInfo::initModRoleInfo()
 {
-	lrb::GameProto::bindReqVerifyDataFunc(std::bind(ModRoleInfo::reqVerifyDataFunc, std::placeholders::_1));
+	lrb::GameProto::bindReqAckFuncTypeFunc(std::bind(ModRoleInfo::reqAckFuncTypeFunc, std::placeholders::_1));
 	lrb::GameProto::bindReqRoleInfoFunc(std::bind(ModRoleInfo::reqRoleInfoFunc, std::placeholders::_1));
 	lrb::GameProto::bindReqRoleNameFunc(std::bind(ModRoleInfo::reqRoleNameFunc, std::placeholders::_1));
 	lrb::GameProto::bindReqRolePosFunc(std::bind(ModRoleInfo::reqRolePosFunc, std::placeholders::_1));
+
 }
 
-void ModRoleInfo::reqVerifyDataFunc(lrb::NetWork::DataPacker *packer)
+void ModRoleInfo::reqAckFuncTypeFunc(lrb::NetWork::DataPacker *packer)
 {
-	lrb::GameProto::packAckVerifyData(packer, g_lrb_GameProto_ReqVerifyData.verify);
+	lrb::GameProto::packAckFuncType(packer, g_lrb_GameProto_ReqAckFuncType.acktype);
 }
 
 void ModRoleInfo::reqRoleInfoFunc(lrb::NetWork::DataPacker *packer)
