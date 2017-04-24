@@ -1,4 +1,4 @@
-#ifndef _LRB_MOD_MOD_IFNO_H
+#ifndef _LRB_MOD_MOD_INFO_H
 #define _LRB_MOD_MOD_INFO_H
 
 

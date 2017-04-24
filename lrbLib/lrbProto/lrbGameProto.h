@@ -102,12 +102,60 @@ namespace GameProto {
 		uint32_t modRoleId;
 	};
 
+	struct ReqFightRoleData {
+
+	};
+
+	struct AckFightRoleData {
+		uint32_t fightRoleId;
+		uint32_t itemId;
+		uint32_t hp;
+	};
+
+	struct ReqFightAttack {
+
+	};
+
+	struct AckFightAttack {
+		uint32_t roleId;
+		uint32_t itemId;
+		uint32_t hp;
+	};
+
+	struct ReqFightDefend {
+
+	};
+
+	struct AckFightDefend {
+		uint32_t roleId;
+		uint32_t hp;
+	};
+
+	struct ReqFightBuff {
+
+	};
+
+	struct AckFightBuff {
+		uint32_t targetId;
+		uint32_t buffId;
+		uint32_t buffValue;
+		uint32_t endRound;
+	};
+
+	struct ReqFightRound {
+
+	};
+
+	struct AckFightRound {
+		uint32_t roundId;
+	};
+
 	struct ReqFight {
 		uint32_t modTargetId;
 	};
 
 	struct AckFight {
-		uint32_t fightId;
+
 	};
 		
 	struct ReqUseItem {

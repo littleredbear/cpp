@@ -1,7 +1,7 @@
 
 #include "lrbRunLoop.h"
 #include "lrbServerNet.h"
-#include "lrbServerData.h"
+#include "lrbModData.h"
 
 void gameServerStart()
 {
