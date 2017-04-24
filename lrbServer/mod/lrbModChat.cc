@@ -20,6 +20,8 @@ void ModChat::initModChat()
 
 void ModChat::reqChatInfo(lrb::NetWork::DataPacker *packer)
 {
+	if (packer->state() != 0)
+		return;
 
 	lrb::GameProto::packAckStreamData(packer, g_lrb_GameProto_ReqStreamData.data, g_lrb_GameProto_ReqStreamData.size);
 	lrb::GameProto::packAckChatInfo(packer, g_lrb_GameProto_ReqChatInfo.targetId, g_lrb_GameProto_ReqChatInfo.channelId);

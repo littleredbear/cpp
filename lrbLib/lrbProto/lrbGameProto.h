@@ -52,7 +52,7 @@ namespace GameProto {
 	};
 		
 	struct ReqErrorCode {
-		uint32_t errorCode;
+
 	};
 	
 	struct AckErrorCode {
@@ -112,7 +112,8 @@ namespace GameProto {
 		
 	struct ReqUseItem {
 		uint32_t itemId;
-		uint32_t modTargetId;
+		uint32_t userId;
+		uint32_t targetId;
 	};
 	
 	struct AckUseItem {

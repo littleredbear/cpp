@@ -102,6 +102,7 @@ void DataPacker::addValue(int val)
         if (m_doneVal != 0 && m_doneVal == m_curVal)
         {
                 sendData();
+		reusePacker();
         }
 
 }
@@ -127,23 +128,49 @@ void DataPacker::setDoneValue(int val)
 	if (m_state != 0)
 		reusePacker();
 	else if (val == m_curVal)
+	{
                 sendData();
+		reusePacker();
+	}
         else
                 m_doneVal = val;
 }
 
+void DataPacker::clearData()
+{
+	for (auto ptr : m_datas)
+		free(ptr);
+	
+	m_datas.clear();
+	m_lens.clear();
+}
+
 void DataPacker::sendData(int linkId)
 {
+	assert(m_state == 0);
+
 	void *data;
 	int ret = getData(&data);
 
-	::sendData(linkId, data, ret);
+	if (m_group.empty())
+	{
+		if (linkId == -1)
+			RunLoop::runInLoop(std::bind(&NetLink::addNetData, m_link, m_verify, data, ret), RunLoopType::RLT_NET);
+		else
+			::sendData(linkId, data, ret);
+	}
+	else
+	{
+		sendGroupData(m_group, m_port, data, ret);
+	}
+
 	m_state = 1;
 }
 
 void DataPacker::sendToRoleIds(uint32_t count, ...)
 {
 	assert(count > 0);
+	assert(m_state == 0);
 
 	void *data;
 	int ret = getData(&data);
@@ -201,6 +228,11 @@ void DataPacker::roleLogin(uint32_t roleId)
 	RunLoop::runInLoop(std::bind(&NetLink::roleLogin, m_link, roleId), RunLoopType::RLT_NET);
 }
 
+uint8_t DataPacker::state()
+{
+	return m_state;
+}
+
 NetLink *DataPacker::netLink()
 {
 	return m_link;
@@ -238,17 +270,6 @@ DataPacker *DataPacker::nextPacker()
         return m_next;
 }
 
-void DataPacker::sendData()
-{
-	void *data;
-	int ret = getData(&data);
-	if (m_group.empty())
-       		RunLoop::runInLoop(std::bind(&NetLink::addNetData, m_link, m_verify, data, ret), RunLoopType::RLT_NET);
-	else
-		sendGroupData(m_group, m_port, data, ret);
-
-        reusePacker();
-}
 
 void DataPacker::reusePacker()
 {

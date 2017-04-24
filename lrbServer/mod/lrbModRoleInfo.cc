@@ -3,6 +3,8 @@
 #include "lrbGameProtoFunc.h"
 #include "lrbNetWork.h"
 #include "lrbModData.h"
+#include "lrbErrCode.h"
+#include <random>
 
 
 using namespace lrb::server::mod;
@@ -11,14 +13,16 @@ using namespace lrb::NetWork;
 
 
 extern ReqAckFuncType g_lrb_GameProto_ReqAckFuncType;
-extern ReqRoleInfo g_lrb_GameProto_ReqRoleInfo;
+extern ReqVerifyData g_lrb_GameProto_ReqVerifyData;
+extern ReqRoleId g_lrb_GameProto_ReqRoleId;
 extern ReqRoleName g_lrb_GameProto_ReqRoleName;
 extern ReqRolePos g_lrb_GameProto_ReqRolePos;
 
 void ModRoleInfo::initModRoleInfo()
 {
 	lrb::GameProto::bindReqAckFuncTypeFunc(std::bind(ModRoleInfo::reqAckFuncTypeFunc, std::placeholders::_1));
-	lrb::GameProto::bindReqRoleInfoFunc(std::bind(ModRoleInfo::reqRoleInfoFunc, std::placeholders::_1));
+	lrb::GameProto::bindReqVerifyDataFunc(std::bind(ModRoleInfo::reqVerifyDataFunc, std::placeholders::_1));
+	lrb::GameProto::bindReqRoleIdFunc(std::bind(ModRoleInfo::reqRoleIdFunc, std::placeholders::_1));
 	lrb::GameProto::bindReqRoleNameFunc(std::bind(ModRoleInfo::reqRoleNameFunc, std::placeholders::_1));
 	lrb::GameProto::bindReqRolePosFunc(std::bind(ModRoleInfo::reqRolePosFunc, std::placeholders::_1));
 
@@ -29,20 +33,36 @@ void ModRoleInfo::reqAckFuncTypeFunc(lrb::NetWork::DataPacker *packer)
 	lrb::GameProto::packAckFuncType(packer, g_lrb_GameProto_ReqAckFuncType.acktype);
 }
 
-void ModRoleInfo::reqRoleInfoFunc(lrb::NetWork::DataPacker *packer)
+void ModRoleInfo::reqVerifyDataFunc(lrb::NetWork::DataPacker *packer)
 {
-	if (g_lrb_GameProto_ReqRoleInfo.roleId == 0)
-		g_lrb_GameProto_ReqRoleInfo.roleId = DataCache::getInstance()->createRoleInfo();
+	RoleData *rdata = DataCache::getInstance()->getRoleData(packer->netLink()->roleId());
 
-	lrb::GameProto::packAckRoleInfo(packer, g_lrb_GameProto_ReqRoleInfo.roleId);
+	if (g_lrb_GameProto_ReqVerifyData.verify != rdata->getModRoleInfo()->verify())
+	{
+		lrb::server::sendErrCode(packer, ErrCode::Err_Verify);
+	} else
+	{
+		lrb::GameProto::packAckVerifyData(packer, rdata->getModRoleInfo()->nextVerify());
+	}
+}
+
+void ModRoleInfo::reqRoleIdFunc(lrb::NetWork::DataPacker *packer)
+{
+	if (g_lrb_GameProto_ReqRoleId.roleId == 0)
+		g_lrb_GameProto_ReqRoleId.roleId = DataCache::getInstance()->createRoleInfo();
+
+	lrb::GameProto::packAckRoleInfo(packer, g_lrb_GameProto_ReqRoleId.roleId);
 }
 
 void ModRoleInfo::reqRoleNameFunc(lrb::NetWork::DataPacker *packer)
 {
-	RoleData *rdata = DataCache::getInstance()->getRoleData(g_lrb_GameProto_ReqRoleInfo.roleId);
+	if (packer->state() != 0)
+		return;
+
+	RoleData *rdata = DataCache::getInstance()->getRoleData(g_lrb_GameProto_ReqRoleId.roleId);
 	if (rdata == NULL)
 	{
-		lrb::GameProto::packAckRoleName(packer, "");
+		lrb::server::sendErrCode(packer, ErrCode::Err_RoleId);
 		return;
 	}
 		
@@ -56,10 +76,13 @@ void ModRoleInfo::reqRoleNameFunc(lrb::NetWork::DataPacker *packer)
 
 void ModRoleInfo::reqRolePosFunc(lrb::NetWork::DataPacker *packer)
 {
-	RoleData *rdata = DataCache::getInstance()->getRoleData(g_lrb_GameProto_ReqRoleInfo.roleId);
+	if (packer->state() != 0)
+		return;
+
+	RoleData *rdata = DataCache::getInstance()->getRoleData(g_lrb_GameProto_ReqRoleId.roleId);
 	if (rdata == NULL)
 	{
-		lrb::GameProto::packAckRolePos(packer, -1, -1);
+		lrb::server::sendErrCode(packer, ErrCode::Err_RoleId);
 		return;
 	}
 
@@ -110,6 +133,20 @@ uint32_t ModRoleInfo::posx()
 uint32_t ModRoleInfo::posy()
 {
 	return m_posy;
+}
+
+uint32_t ModRoleInfo::verify()
+{
+	return m_verify;
+}
+
+uint32_t ModRoleInfo::nextVerify()
+{
+	std::random_device rd;
+	std::uniform_int_distribution<uint32_t> uni_dist(0, -1);
+	m_verify = uni_dist(rd);
+
+	return m_verify;
 }
 
 void ModRoleInfo::setName(const std::string &name)

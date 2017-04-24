@@ -27,11 +27,17 @@ namespace NetWork {
 		void addValue(int val = 1);
                 void packData(void *data, int protoId, ProtoType type);
                 void setDoneValue(int val);
-		void sendData(int linkId);
+
+		void clearData();
+	
+		void sendData(int linkId = -1);
 		void sendToRoleIds(uint32_t count, ...);
+
 		int getData(void **res);
 		void setGroupSend(const std::string &group, short port);
 		void roleLogin(uint32_t roleId);
+
+		uint8_t state();
 		
 		NetLink *netLink();
 		void setNetLink(NetLink *link, int verify);
@@ -43,7 +49,6 @@ namespace NetWork {
                 DataPacker *nextPacker();
 
         private:
-                void sendData();
                 void reusePacker();
 
                 std::vector<void *> m_datas;

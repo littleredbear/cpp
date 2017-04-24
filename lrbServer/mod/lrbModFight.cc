@@ -8,7 +8,12 @@ using namespace lrb::GameProto;
 
 
 extern ReqFight g_lrb_GameProto_ReqFight;
-extern ReqRoleId g_lrb_GameProto_ReqRoleId;
+
+
+namespace {
+
+}
+
 
 void ModFight::initModFight()
 {

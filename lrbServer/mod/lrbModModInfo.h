@@ -24,9 +24,10 @@ namespace mod {
 
 		uint32_t modRoleId();
 		void setModRoleId(uint32_t roleId);
-
+	
 	private:
 		static void reqModId(lrb::NetWork::DataPacker *packer);
+		static uint32_t getModRoleId(uint32_t modId);
 		
 		uint32_t m_modId;
 		uint32_t m_modRoleId;
