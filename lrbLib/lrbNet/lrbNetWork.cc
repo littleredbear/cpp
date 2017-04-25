@@ -414,7 +414,7 @@ void DataParser::parseFirstData(char *data, int size, int verify, NetLink *link)
                         break;
                 } else
                 {
-				void *ptr = calloc(frameLen, sizeof(char));
+				char *ptr = (char *)calloc(frameLen, sizeof(char));
 				if (ptr)
 				{
 					memcpy(ptr, data, frameLen);
@@ -907,7 +907,7 @@ void NetLink::processLinkProto(int protoId)
 	}
 
 	if (s_lrb_linkProtoFunc)
-		s_lrb_linkProtoFunc(protoId);
+		s_lrb_linkProtoFunc(this, protoId);
 
 }
 

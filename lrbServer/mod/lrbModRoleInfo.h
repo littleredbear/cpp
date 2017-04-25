@@ -26,6 +26,9 @@ namespace mod {
 		uint32_t posx();
 		uint32_t posy();
 
+		uint32_t fightId();
+		void setFightId(uint32_t fightId);
+
 		uint32_t nextVerify();
 
 	private:
@@ -44,6 +47,7 @@ namespace mod {
 
 		std::string m_name;
 		uint32_t m_verify;
+		uint32_t m_fightId;
 		uint32_t m_roleId;
 		uint32_t m_posx;
 		uint32_t m_posy;

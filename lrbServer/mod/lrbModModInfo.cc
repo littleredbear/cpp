@@ -104,3 +104,7 @@ void ModModInfo::setModRoleId(uint32_t roleId)
 	m_modRoleId = roleId;
 }
 
+
+
+
+

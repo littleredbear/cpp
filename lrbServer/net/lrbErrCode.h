@@ -17,7 +17,10 @@ namespace server {
 		Err_Verify,
 		Err_RoleId,
 		Err_InFight,
-		
+		Err_FightId,
+		Err_NoModInfo,
+		Err_FightData,
+		Err_FightRound,
 	};
 
 	

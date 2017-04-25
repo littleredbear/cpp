@@ -4,7 +4,7 @@
 using namespace lrb::GameProto;
 
 #ifdef LRB_GameProto_SERVER
-std::function<void(lrb::NetWork::DataPacker *)> g_lrb_GameProto_reqFuncs[12];
+std::function<void(lrb::NetWork::DataPacker *)> g_lrb_GameProto_reqFuncs[17];
 #else
 std::function<void()> g_lrb_GameProto_ackFuncs[(int)AckFuncType::AFT_TOP];
 extern AckVerifyData g_lrb_GameProto_AckVerifyData;
@@ -79,10 +79,9 @@ void packAckVerifyData(lrb::NetWork::DataPacker *packer, uint32_t verify)
 	packer->packData(&tmpdata, 5, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
-void packReqErrorCode(lrb::NetWork::DataPacker *packer, uint32_t errorCode)
+void packReqErrorCode(lrb::NetWork::DataPacker *packer)
 {
 	ReqErrorCode tmpdata;
-	tmpdata.errorCode = errorCode;
 	packer->packData(&tmpdata, 6, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
@@ -206,46 +205,154 @@ void packAckModId(lrb::NetWork::DataPacker *packer, uint32_t modId, uint32_t mod
 	packer->packData(&tmpdata, 17, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
-void packReqFight(lrb::NetWork::DataPacker *packer, uint32_t modTargetId)
+void packReqFightRoleData(lrb::NetWork::DataPacker *packer)
 {
-	ReqFight tmpdata;
-	tmpdata.modTargetId = modTargetId;
+	ReqFightRoleData tmpdata;
 	packer->packData(&tmpdata, 18, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
-void bindReqFightFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
+void bindReqFightRoleDataFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
 {
 #ifdef LRB_GameProto_SERVER
 	g_lrb_GameProto_reqFuncs[9] = func;
 #endif
 }
 
-void packAckFight(lrb::NetWork::DataPacker *packer, uint32_t fightId)
+void packAckFightRoleData(lrb::NetWork::DataPacker *packer, uint32_t fightRoleId, uint32_t itemId, uint32_t hp)
 {
-	AckFight tmpdata;
-	tmpdata.fightId = fightId;
+	AckFightRoleData tmpdata;
+	tmpdata.fightRoleId = fightRoleId;
+	tmpdata.itemId = itemId;
+	tmpdata.hp = hp;
 	packer->packData(&tmpdata, 19, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
-void packReqUseItem(lrb::NetWork::DataPacker *packer, uint32_t itemId, uint32_t modTargetId)
+void packReqFightAttack(lrb::NetWork::DataPacker *packer)
 {
-	ReqUseItem tmpdata;
-	tmpdata.itemId = itemId;
-	tmpdata.modTargetId = modTargetId;
+	ReqFightAttack tmpdata;
 	packer->packData(&tmpdata, 20, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
-void bindReqUseItemFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
+void bindReqFightAttackFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
 {
 #ifdef LRB_GameProto_SERVER
 	g_lrb_GameProto_reqFuncs[10] = func;
 #endif
 }
 
+void packAckFightAttack(lrb::NetWork::DataPacker *packer, uint32_t roleId, uint32_t itemId, uint32_t hp)
+{
+	AckFightAttack tmpdata;
+	tmpdata.roleId = roleId;
+	tmpdata.itemId = itemId;
+	tmpdata.hp = hp;
+	packer->packData(&tmpdata, 21, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void packReqFightDefend(lrb::NetWork::DataPacker *packer)
+{
+	ReqFightDefend tmpdata;
+	packer->packData(&tmpdata, 22, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void bindReqFightDefendFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
+{
+#ifdef LRB_GameProto_SERVER
+	g_lrb_GameProto_reqFuncs[11] = func;
+#endif
+}
+
+void packAckFightDefend(lrb::NetWork::DataPacker *packer, uint32_t roleId, uint32_t hp)
+{
+	AckFightDefend tmpdata;
+	tmpdata.roleId = roleId;
+	tmpdata.hp = hp;
+	packer->packData(&tmpdata, 23, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void packReqFightBuff(lrb::NetWork::DataPacker *packer)
+{
+	ReqFightBuff tmpdata;
+	packer->packData(&tmpdata, 24, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void bindReqFightBuffFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
+{
+#ifdef LRB_GameProto_SERVER
+	g_lrb_GameProto_reqFuncs[12] = func;
+#endif
+}
+
+void packAckFightBuff(lrb::NetWork::DataPacker *packer, uint32_t targetId, uint32_t buffId, uint32_t buffValue, uint32_t endRound)
+{
+	AckFightBuff tmpdata;
+	tmpdata.targetId = targetId;
+	tmpdata.buffId = buffId;
+	tmpdata.buffValue = buffValue;
+	tmpdata.endRound = endRound;
+	packer->packData(&tmpdata, 25, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void packReqFightRound(lrb::NetWork::DataPacker *packer)
+{
+	ReqFightRound tmpdata;
+	packer->packData(&tmpdata, 26, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void bindReqFightRoundFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
+{
+#ifdef LRB_GameProto_SERVER
+	g_lrb_GameProto_reqFuncs[13] = func;
+#endif
+}
+
+void packAckFightRound(lrb::NetWork::DataPacker *packer, uint32_t roundId)
+{
+	AckFightRound tmpdata;
+	tmpdata.roundId = roundId;
+	packer->packData(&tmpdata, 27, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void packReqFight(lrb::NetWork::DataPacker *packer, uint32_t modTargetId)
+{
+	ReqFight tmpdata;
+	tmpdata.modTargetId = modTargetId;
+	packer->packData(&tmpdata, 28, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void bindReqFightFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
+{
+#ifdef LRB_GameProto_SERVER
+	g_lrb_GameProto_reqFuncs[14] = func;
+#endif
+}
+
+void packAckFight(lrb::NetWork::DataPacker *packer)
+{
+	AckFight tmpdata;
+	packer->packData(&tmpdata, 29, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void packReqUseItem(lrb::NetWork::DataPacker *packer, uint32_t itemId, uint32_t userId, uint32_t targetId)
+{
+	ReqUseItem tmpdata;
+	tmpdata.itemId = itemId;
+	tmpdata.userId = userId;
+	tmpdata.targetId = targetId;
+	packer->packData(&tmpdata, 30, lrb::NetWork::ProtoType::PT_GameProto);
+}
+
+void bindReqUseItemFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
+{
+#ifdef LRB_GameProto_SERVER
+	g_lrb_GameProto_reqFuncs[15] = func;
+#endif
+}
+
 void packAckUseItem(lrb::NetWork::DataPacker *packer)
 {
 	AckUseItem tmpdata;
-	packer->packData(&tmpdata, 21, lrb::NetWork::ProtoType::PT_GameProto);
+	packer->packData(&tmpdata, 31, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
 void packReqChatInfo(lrb::NetWork::DataPacker *packer, uint32_t targetId, uint8_t channelId)
@@ -253,13 +360,13 @@ void packReqChatInfo(lrb::NetWork::DataPacker *packer, uint32_t targetId, uint8_
 	ReqChatInfo tmpdata;
 	tmpdata.targetId = targetId;
 	tmpdata.channelId = channelId;
-	packer->packData(&tmpdata, 22, lrb::NetWork::ProtoType::PT_GameProto);
+	packer->packData(&tmpdata, 32, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
 void bindReqChatInfoFunc(const std::function<void(lrb::NetWork::DataPacker *)> &func)
 {
 #ifdef LRB_GameProto_SERVER
-	g_lrb_GameProto_reqFuncs[11] = func;
+	g_lrb_GameProto_reqFuncs[16] = func;
 #endif
 }
 
@@ -268,7 +375,7 @@ void packAckChatInfo(lrb::NetWork::DataPacker *packer, uint32_t targetId, uint8_
 	AckChatInfo tmpdata;
 	tmpdata.targetId = targetId;
 	tmpdata.channelId = channelId;
-	packer->packData(&tmpdata, 23, lrb::NetWork::ProtoType::PT_GameProto);
+	packer->packData(&tmpdata, 33, lrb::NetWork::ProtoType::PT_GameProto);
 }
 
 void bindAckFunc(AckFuncType acktype, const std::function<void()> &func)
@@ -282,7 +389,7 @@ void bindAckFunc(AckFuncType acktype, const std::function<void()> &func)
 void execReqFunc(int protoId, lrb::NetWork::DataPacker *packer)
 {
 #ifdef LRB_GameProto_SERVER
-	if (protoId > 0 && protoId < 24 && !(protoId & 1))
+	if (protoId > 0 && protoId < 34 && !(protoId & 1))
 		g_lrb_GameProto_reqFuncs[protoId >> 1](packer);
 #endif
 }

@@ -135,6 +135,16 @@ uint32_t ModRoleInfo::posy()
 	return m_posy;
 }
 
+uint32_t ModRoleInfo::fightId()
+{
+	return m_fightId;
+}
+
+void ModRoleInfo::setFightId(uint32_t fightId)
+{
+	m_fightId = fightId;
+}
+
 uint32_t ModRoleInfo::verify()
 {
 	return m_verify;

@@ -117,7 +117,7 @@ namespace GameProto {
 	};
 
 	struct AckFightAttack {
-		uint32_t roleId;
+		uint32_t fightRoleId;
 		uint32_t itemId;
 		uint32_t hp;
 	};
@@ -127,7 +127,7 @@ namespace GameProto {
 	};
 
 	struct AckFightDefend {
-		uint32_t roleId;
+		uint32_t fightRoleId;
 		uint32_t hp;
 	};
 
