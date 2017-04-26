@@ -3,7 +3,8 @@
 <!--name:名字，type：类型，value：使用效果，limit：使用限制-->
 
 <root version="1">
-	<item id="1" name="1" comment="" type="" value="1,2" limit=""/>
-	<item id="2" name="2" comment="" type="" value="" limit=""/>
+	<item id="1" name="9" comment="" type="8" value="" limit=""/>
+	<item id="2" name="10" comment="" type="8" value="" limit=""/>
+	<item id="3" name="11" comment="" type="8" value="" limit=""/>
 
 </root>

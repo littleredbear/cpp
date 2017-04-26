@@ -9,5 +9,9 @@
 	<word id="6" content1="宝箱"/>
 	<word id="7" content1="传送门"/>
 	<word id="8" content1="布偶"/>
+	<Word id="9" content1="攻击"/>
+	<Word id="10" content1="防御"/>
+	<Word id="11" content1="逃跑"/>
+	<word id="12" content1="战斗"/>
 
 </root>
