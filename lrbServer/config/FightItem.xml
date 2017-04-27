@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--name:名字，type：类型，value：使用效果，limit：使用限制-->
+
+<root version="1">
+	<item id="1" name="9" comment="" value=""/>
+	<item id="2" name="10" comment="" value=""/>
+	<item id="3" name="11" comment="" value=""/>
+
+</root>

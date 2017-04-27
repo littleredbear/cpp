@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!--value：值类型，范围值或是具体值 -->
+
 <root version="1">
-	<value id="1" content="" type="1" subId="1" comment="攻击"/>
+	<value id="1" content="" type="1" comment=""/>
 
 </root>

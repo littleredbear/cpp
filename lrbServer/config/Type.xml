@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <root version="1">
-	<type id="1" name="2" comment="" path="Item.xml"/>
+	<type id="1" name="2" comment="" path="NormalItem.xml"/>
 	<type id="2" name="3" comment="" path="Feature.xml"/>
 	<type id="3" name="4" comment="" path="Limit.xml"/>
 	<type id="4" name="5" comment=""/>
 	<type id="5" name="6" comment=""/>
-	<type id="6" name="7" comment=""/>
+	<type id="6" name="7" comment="" path="FightItem.xml"/>
 	<type id="7" name="8" comment="" path="Doll.xml"/>
-	<type id="8" name="12" comment=""/>
+	<type id="8" name="14" comment="" path="SpecialItem.xml"/>
 </root>

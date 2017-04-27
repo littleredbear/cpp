@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <root version="1">
+
 	<word id="1" content1="无" content2="None"/>
-	<word id="2" content1="物品" content2="Item"/>
+	<word id="2" content1="普通道具" content2="Item"/>
 	<word id="3" content1="特性" content2="Feature"/>
 	<word id="4" content1="使用限制" content2="Limit"/>
 	<word id="5" content1="身份" content2="Identity"/>
 	<word id="6" content1="宝箱"/>
-	<word id="7" content1="传送门"/>
+	<word id="7" content1="战斗道具"/>
 	<word id="8" content1="布偶"/>
 	<Word id="9" content1="攻击"/>
 	<Word id="10" content1="防御"/>
 	<Word id="11" content1="逃跑"/>
-	<word id="12" content1="战斗"/>
+	<Word id="12" content1="小血"/>
+	<Word id="13" content1="小蓝"/>
+	<Word id="14" content1="特殊道具"/>
 
 </root>
